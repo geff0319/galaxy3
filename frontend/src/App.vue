@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import {onMounted, ref} from 'vue'
+import {ref} from 'vue'
 
 import * as Stores from '@/stores'
 import {
   Events,
   Window
 } from '@/bridge'
-import { exitApp, ignoredError, sampleID, sleep } from '@/utils'
+import { exitApp, ignoredError, sleep } from '@/utils'
 import { useMessage, usePicker, useConfirm, usePrompt, useAlert } from '@/hooks'
-import {message as antdMessage} from "ant-design-vue";
 
 import AboutView from '@/views/AboutView.vue'
 import SplashView from '@/views/SplashView.vue'
@@ -16,22 +15,15 @@ import CommandView from './views/CommandView.vue'
 import { NavigationBar, MainPage, TitleBar } from '@/components'
 import WidgetsView from "@/views/WidgetsView.vue";
 import { useRouter,useRoute } from 'vue-router';
-import {message as antmessage} from "ant-design-vue/es/components";
 
-const router = useRouter()
 const route = useRoute()
 
 const loading =ref(true)
 const envStore = Stores.useEnvStore()
 const appStore = Stores.useAppStore()
 const pluginsStore = Stores.usePluginsStore()
-const profilesStore = Stores.useProfilesStore()
-const rulesetsStore = Stores.useRulesetsStore()
 const appSettings = Stores.useAppSettingsStore()
-const kernelApiStore = Stores.useKernelApiStore()
-const subscribesStore = Stores.useSubscribesStore()
 const scheduledTasksStore = Stores.useScheduledTasksStore()
-const ytdlpStore = Stores.useYtdlpStore()
 const wsClientStore = Stores.useWsClientStore()
 
 const { message } = useMessage()
@@ -84,16 +76,6 @@ appSettings.setupAppSettings().then(async () => {
     ignoredError(wsClientStore.setupWsSettings)
   ])
   await sleep(1000)
-
-  //ws
-  if(wsClientStore.ws.autoConnect){
-    try {
-      wsClientStore.connectWs()
-    }catch (error){
-      message.error("ws连接失败：" + error)
-    }
-  }
-
 
   loading.value = false
 

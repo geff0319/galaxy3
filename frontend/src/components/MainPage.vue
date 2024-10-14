@@ -2,9 +2,12 @@
 import { useRoute,useRouter } from 'vue-router';
 import {Events, Window} from "@/bridge";
 import {message} from "ant-design-vue";
+import * as Stores from "@/stores";
 
 const route = useRoute();
 const router = useRouter();
+const wsClientStore = Stores.useWsClientStore()
+
 Events.On('notify',(event:any)=>{
   router.push({path: '/ytdlp'})
   const w = Window.Get('MainWin')
@@ -31,6 +34,15 @@ Events.On('notify',(event:any)=>{
       break;
   }
 })
+//ws
+if(wsClientStore.ws.autoConnect){
+  try {
+    wsClientStore.connectWs()
+  }catch (error){
+    message.error("ws连接失败：" + error)
+  }
+}
+
 </script>
 
 <template>
