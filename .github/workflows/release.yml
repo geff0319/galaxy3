@@ -78,7 +78,7 @@ jobs:
           GOOS: ${{ matrix.build.GOOS }}
           GOARCH: ${{ matrix.build.GOARCH }}
         # run: ~/go/bin/wails build -m -s -trimpath -skipbindings -devtools -tags webkit2_41 -o ${{ env.APP_NAME }}.exe
-        run: go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o ${{ env.APP_NAME }}.exe
+        run: go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
 
       # Compress: macOS
       - name: Create a compressed file for macOS
@@ -92,7 +92,7 @@ jobs:
       - name: Create a compressed file for Windows
         if: runner.os == 'Windows'
         run: |
-          cd ./build/bin
+          cd ./bin
           Compress-Archive -Path ${{ env.APP_NAME }}.exe -DestinationPath ${{ env.ZIP_FILE }}
 
       # Compress: GNU/Linux
