@@ -1,0 +1,9 @@
+/新建文本文档.txt
+/push tag.bat
+
+frontend/dist
+
+.DS_Store
+/bridge/translate_test.go
+/logs/
+/bin/
