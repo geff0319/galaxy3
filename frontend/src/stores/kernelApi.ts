@@ -4,7 +4,7 @@ import { defineStore } from 'pinia'
 import type { KernelApiConfig, Proxy } from '@/api/kernel.schema'
 import { KernelWorkDirectory, getKernelFileName } from '@/constant'
 import { ProcessInfo, KillProcess, ExecBackground } from '@/bridge'
-import { generateConfigFile, ignoredError, updateTrayMenus } from '@/utils'
+import { generateConfigFile, ignoredError } from '@/utils'
 import { getConfigs, setConfigs, getProxies, getProviders } from '@/api/kernel'
 import { useAppSettingsStore, useProfilesStore, useLogsStore, useEnvStore } from '@/stores'
 
@@ -158,10 +158,10 @@ export const useKernelApiStore = defineStore('kernelApi', () => {
     await startKernel()
   }
 
-  watch(
-    [() => config.value.mode, () => config.value.tun.enable, () => proxies.value],
-    updateTrayMenus
-  )
+  // watch(
+  //   [() => config.value.mode, () => config.value.tun.enable, () => proxies.value],
+  //   updateTrayMenus
+  // )
 
   return {
     startKernel,

@@ -118,13 +118,14 @@ func YtdlpWinShow() {
 		Centered:        true,
 		DevToolsEnabled: true,
 		Windows: application.WindowsWindow{
-			BackdropType:        application.Acrylic,
+			//BackdropType:        application.Acrylic,
 			WindowMask:          WindowMask(600, 230),
 			WindowMaskDraggable: true,
 			//ExStyle:             w32.WS_EX_TOOLWINDOW,
 		},
-		BackgroundType: application.BackgroundTypeTranslucent,
-		URL:            "#/ytdlpWidgets",
+		//BackgroundType: application.BackgroundTypeTranslucent,
+		BackgroundColour: application.NewRGB(33, 37, 41),
+		URL:              "#/ytdlpWidgets",
 	})
 	win.RegisterHook(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
 		win.Show()

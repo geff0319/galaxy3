@@ -113,7 +113,7 @@ const download = async () =>{
 <style lang="less" scoped>
 .ytcontainer {
   height: 100vh; /* 设置父容器高度为视口的高度 */
-  background-color: rgba(255, 255, 255, 1); /* 白色背景，透明度为 0.5 */
+  //background-color: rgba(255, 255, 255, 1); /* 白色背景，透明度为 0.5 */
   //background-color: transparent; /* 完全透明背景 */
 }
 .spaced-div {

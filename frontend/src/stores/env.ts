@@ -2,7 +2,7 @@ import { ref, watch } from 'vue'
 import { defineStore } from 'pinia'
 
 import { GetEnv } from '@/bridge'
-import { updateTrayMenus } from '@/utils'
+// import { updateTrayMenus } from '@/utils'
 import { useKernelApiStore } from '@/stores'
 import { SetSystemProxy, GetSystemProxy } from '@/utils'
 
@@ -66,7 +66,7 @@ export const useEnvStore = defineStore('env', () => {
     else await clearSystemProxy()
   }
 
-  watch(systemProxy, updateTrayMenus)
+  // watch(systemProxy, updateTrayMenus)
 
   return {
     env,

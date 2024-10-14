@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { parse, stringify } from 'yaml'
 
 import { HttpGet, Readfile, Writefile } from '@/bridge'
-import { debounce, deepClone, ignoredError, updateTrayMenus } from '@/utils'
+import { debounce, deepClone, ignoredError } from '@/utils'
 import { PluginsFilePath, PluginTrigger, PluginManualEvent } from '@/constant'
 import { useAppSettingsStore, type ProfileType, type SubscribeType } from '@/stores'
 
@@ -375,9 +375,9 @@ export const usePluginsStore = defineStore('plugins', () => {
       .join()
   )
 
-  watch([_watchMenus, _watchDisabled], () => {
-    updateTrayMenus()
-  })
+  // watch([_watchMenus, _watchDisabled], () => {
+  //   updateTrayMenus()
+  // })
 
   return {
     plugins,

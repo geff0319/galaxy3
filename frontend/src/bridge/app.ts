@@ -11,7 +11,7 @@ export const ExitApp = App.ExitApp
 
 export const ExitKey = App.ExitKey
 
-export const UpdateTrayMenus = App.UpdateTrayMenus
+// export const UpdateTrayMenus = App.UpdateTrayMenus
 
 export const UpdateTray = async (tray: TrayContent) => {
   const { icon = '', title = '', tooltip = '' } = tray

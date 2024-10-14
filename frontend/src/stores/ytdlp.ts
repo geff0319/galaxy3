@@ -11,7 +11,7 @@ import {
 import {message} from "ant-design-vue";
 import {Readfile, Writefile} from "@/bridge";
 import {parse, stringify} from "yaml";
-import {debounce, updateTrayMenus} from "@/utils";
+import {debounce} from "@/utils";
 import {type Menu, useAppStore} from "@/stores/app";
 
 export type ProcessType = {

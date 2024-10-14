@@ -3,7 +3,7 @@ import {defineStore} from 'pinia'
 import {parse, stringify} from 'yaml'
 
 import i18n from '@/lang'
-import {debounce, updateTrayMenus} from '@/utils'
+import {debounce} from '@/utils'
 import {Readfile, Writefile} from '@/bridge'
 // import { Readfile, Writefile } from "@/bindings/galaxy3/bridge/app";
 import {Color, Colors, Lang, Theme, View, WindowStartState} from '@/constant'
@@ -197,19 +197,18 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     { deep: true }
   )
 
-  watch(
-    [
-      themeMode,
-      () => app.value.color,
-      () => app.value.lang,
-      () => app.value.addPluginToMenu,
-      // () => app.value.kernel.running,
-      () => app.value.kernel.unAvailable,
-      () => app.value.kernel.sortByDelay
-    ],
-    // updateTrayMenus
-      updateTrayMenus
-  )
+  // watch(
+  //   [
+  //     themeMode,
+  //     () => app.value.color,
+  //     () => app.value.lang,
+  //     () => app.value.addPluginToMenu,
+  //     // () => app.value.kernel.running,
+  //     () => app.value.kernel.unAvailable,
+  //     () => app.value.kernel.sortByDelay
+  //   ],
+  //     updateTrayMenus
+  // )
 
   watch(themeMode, setAppTheme, { immediate: true })
 
