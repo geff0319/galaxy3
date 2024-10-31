@@ -7,7 +7,6 @@ import (
 	"github.com/energye/systray"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
-	"os"
 	sysruntime "runtime"
 )
 
@@ -104,9 +103,7 @@ func createMenuItem(menu MenuItem, a *App, parent *systray.MenuItem) {
 }
 
 func (a *App) ExitApp() {
-	systray.Quit()
-	runtime.Quit(a.Ctx)
-	os.Exit(0)
+	MainApp.Quit()
 }
 
 //func (a *App) RestartApp() FlagResult {

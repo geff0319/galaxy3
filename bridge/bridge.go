@@ -17,7 +17,7 @@ import (
 	"runtime"
 )
 
-//go:embed icon.ico
+//go:embed image/icon.ico
 var Icon []byte
 
 var MainWin *application.WebviewWindow
@@ -59,7 +59,6 @@ func InitBridge(assets fs.FS) {
 			break
 		}
 	}
-
 	Env.BasePath = filepath.Dir(exePath)
 	basePath := Env.BasePath + "/data/user.yaml"
 	log.Printf(basePath)

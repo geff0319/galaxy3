@@ -2,6 +2,8 @@ package bridge
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/ge-fei-fan/gefflog"
 	"io"
 	"log"
 	"mime/multipart"
@@ -184,6 +186,41 @@ func (a *App) Upload(url string, path string, headers map[string]string, event s
 	}
 
 	return HTTPResult{true, resp.Header, string(b)}
+}
+
+func (a *App) HttpHead(url string, headers map[string]string) HTTPResult {
+	gefflog.Info(fmt.Sprintf("HttpDelete: %s ,%s ", url, headers))
+
+	req, err := http.NewRequest("HEAD", url, nil)
+	if err != nil {
+		return HTTPResult{false, nil, err.Error()}
+	}
+
+	header := make(http.Header)
+
+	for key, value := range headers {
+		header.Set(key, value)
+	}
+	req.Header = header
+
+	client := &http.Client{
+		Timeout: 10 * time.Minute,
+		Transport: &http.Transport{
+			DisableKeepAlives: true,
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return HTTPResult{false, nil, err.Error()}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		gefflog.Err(fmt.Sprintf("Error: received status code %d\n", resp.StatusCode))
+		return HTTPResult{false, nil, fmt.Sprintf("Error: received status code %d\n", resp.StatusCode)}
+	}
+	return HTTPResult{true, resp.Header, "Success"}
 }
 
 func (wt *WriteTracker) Write(p []byte) (n int, err error) {

@@ -14,6 +14,7 @@ import {
   CheckPermissions,
   SwitchPermissions
 } from '@/utils'
+import {FolderOpenOutlined} from "@ant-design/icons-vue";
 
 const isAdmin = ref(false)
 const isTaskScheduled = ref(false)
@@ -191,7 +192,8 @@ if (envStore.env.os === 'windows') {
     <div class="settings-item">
       <div class="title">{{ t('settings.appFolder.name') }}</div>
       <Button @click="handleOpenFolder" type="primary">
-        <Icon icon="folder" fill="var(--btn-primary-color)" />
+<!--        <Icon icon="folder" fill="var(&#45;&#45;btn-primary-color)" />-->
+        <FolderOpenOutlined />
         <span style="margin-left: 8px">{{ t('settings.appFolder.open') }}</span>
       </Button>
     </div>

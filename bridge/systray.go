@@ -5,15 +5,18 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-//go:embed Appicon.png
+//go:embed image/Appicon.png
 var Appicon []byte
+
+//go:embed image/exit.png
+var exit []byte
 
 func InitSystray() {
 	systemTray := MainApp.NewSystemTray()
 	myMenu := MainApp.NewMenu()
 	//设置icon会报错
 	systemTray.SetIcon(Appicon)
-	myMenu.Add("Quit").OnClick(func(ctx *application.Context) {
+	myMenu.Add("Exit").SetBitmap(exit).OnClick(func(ctx *application.Context) {
 		MainWin.Close()
 	})
 

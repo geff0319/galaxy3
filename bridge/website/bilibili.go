@@ -48,29 +48,49 @@ type CidResponse struct {
 type VideoInfoResponse struct {
 	Data struct {
 		AcceptDescription []string `json:"accept_description"`
-		Dash              struct {
+		AcceptQuality     []int64  `json:"accept_quality"`
+		SupportFormats    []struct {
+			Quality        int      `json:"quality"`
+			NewDescription string   `json:"new_description"`
+			Codecs         []string `json:"codecs"`
+		} `json:"support_formats"`
+		Dash struct {
 			Video []struct {
-				BaseUrl string `json:"base_url"`
-				Codecs  string `json:"codecs"`
-				Width   int    `json:"width"`
-				Height  int    `json:"height"`
+				Id        int      `json:"id"`
+				BaseUrl   string   `json:"base_url"`
+				BackupUrl []string `json:"backupUrl"`
+				Bandwidth int64    `json:"bandwidth"`
+				Codecs    string   `json:"codecs"`
+				Width     int      `json:"width"`
+				Height    int      `json:"height"`
 			} `json:"video"`
 			Audio []struct {
-				BaseUrl string `json:"base_url"`
+				BaseUrl   string `json:"base_url"`
+				Bandwidth int64  `json:"bandwidth"`
 			} `json:"audio"`
 		} `json:"dash"`
 	} `json:"data"`
 }
 type BiliMetadata struct {
-	ctx           context.Context
-	Cl            context.CancelFunc `json:"-"`
-	DoneChan      chan struct{}      `json:"-"`
-	SavedFilePath string
-	Cr            CidResponse
-	Vir           VideoInfoResponse
-	WriteFn       func(string, float32) `json:"-"`
-	pWriter       *progressWriter
+	ctx                    context.Context
+	Cl                     context.CancelFunc `json:"-"`
+	DoneChan               chan struct{}      `json:"-"`
+	SavedFilePath          string
+	SelectedVideoStreamUrl string
+	SelectedVideoQuality   string
+	Cr                     CidResponse
+	Vir                    VideoInfoResponse
+	WriteFn                func(string, float32) `json:"-"`
+	pWriter                *progressWriter
 }
+type BiliMetaMemory struct {
+	SavedFilePath          string
+	SelectedVideoStreamUrl string
+	SelectedVideoQuality   string
+	Cr                     CidResponse
+	Vir                    VideoInfoResponse
+}
+
 type WebInterfaceNav struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -260,19 +280,46 @@ func CheckLogin(ck string) (bool, error) {
 	return win.Data.IsLogin, nil
 }
 
+func (bmd *BiliMetadata) getDefaultVideoStreamUrl() {
+	if bmd.SelectedVideoStreamUrl != "" {
+		return
+	}
+	id := bmd.Vir.Data.Dash.Video[0].Id
+	var dstUrl string
+	for _, elem := range bmd.Vir.Data.Dash.Video {
+		if elem.Id == id {
+			dstUrl = elem.BaseUrl
+			if strings.Contains(elem.Codecs, "avc1") {
+				break
+			}
+		}
+	}
+	bmd.SelectedVideoStreamUrl = dstUrl
+	for _, formats := range bmd.Vir.Data.SupportFormats {
+		if formats.Quality == id {
+			bmd.SelectedVideoQuality = formats.NewDescription
+			break
+		}
+	}
+}
 func (bmd *BiliMetadata) Download(basePath string) error {
 	var err error
 	ctx, cancel := context.WithCancel(context.Background())
 	bmd.ctx = ctx
 	bmd.Cl = cancel
 	bmd.DoneChan = make(chan struct{})
-
 	err = bmd.DA()
 	if err != nil {
+		if errors.Is(err, bmd.ctx.Err()) {
+			return nil
+		}
 		return err
 	}
 	err = bmd.DV()
 	if err != nil {
+		if errors.Is(err, bmd.ctx.Err()) {
+			return nil
+		}
 		return err
 	}
 	err = bmd.Merge(basePath)
@@ -303,8 +350,8 @@ func (bmd *BiliMetadata) speed() {
 }
 
 func (bmd *BiliMetadata) DV() error {
-
-	req, err := http.NewRequestWithContext(bmd.ctx, http.MethodGet, bmd.Vir.Data.Dash.Video[0].BaseUrl, nil)
+	bmd.getDefaultVideoStreamUrl()
+	req, err := http.NewRequestWithContext(bmd.ctx, http.MethodGet, bmd.SelectedVideoStreamUrl, nil)
 	if err != nil {
 		return err
 	}

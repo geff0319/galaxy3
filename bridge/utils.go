@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"github.com/go-vgo/robotgo"
 	"github.com/lxn/win"
 	"log"
 	"math/rand"
@@ -87,4 +88,36 @@ func generateRandomString(length int) string {
 		result[i] = charset[r.Intn(len(charset))]
 	}
 	return string(result)
+}
+
+// 返回option窗口展示位置，展示在鼠标正下方
+func (a *App) GetBelowWinPos(winWidth, winHeight int) FlagResultWithData {
+	var dstX, dstY int
+	// 获取屏幕的宽度和高度
+	screenWidth, screenHeight := robotgo.GetScreenSize()
+	// 获取当前鼠标的位置
+	x, y := robotgo.Location()
+
+	distanceBottom := screenHeight - y
+	// 鼠标下方展示不下
+
+	if (winHeight + 10) > distanceBottom {
+		dstY = y - winHeight - 10
+	} else {
+		dstY = y + 10
+	}
+
+	distanceRight := screenWidth - x
+	halfWinWidth := winWidth / 2
+	//鼠标右边展示不够
+
+	if halfWinWidth > distanceRight {
+		dstX = x - winWidth + distanceRight
+	} else if halfWinWidth > x {
+		dstX = 0
+	} else {
+		dstX = x - halfWinWidth
+	}
+
+	return FlagResultWithData{true, "", map[string]int{"dstX": dstX, "dstY": dstY}}
 }

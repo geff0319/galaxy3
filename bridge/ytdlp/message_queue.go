@@ -92,7 +92,7 @@ func (m *MessageQueue) metadataSubscriber() {
 		if err := p.SetMetadata(); err != nil {
 			gefflog.Err(fmt.Sprintf("failed to retrieve metadata id=%s err=%s", p.getShortId(), err.Error()))
 			p.Progress.Status = StatusErrored
-			YdpConfig.Mq.eventBus.Publish("notify", "error", "解析视频失败："+err.Error())
+			YdpConfig.Mq.eventBus.Publish("notify", false, "error", "解析视频失败："+err.Error())
 			return
 		}
 

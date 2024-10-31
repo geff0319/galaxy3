@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { onUnmounted, ref } from 'vue'
 import { useI18n, I18nT } from 'vue-i18n'
-import { UserOutlined } from '@ant-design/icons-vue';
+import { FileTextOutlined,FolderOpenOutlined,LinkOutlined,DeleteOutlined,PlayCircleOutlined } from '@ant-design/icons-vue';
 import { View } from '@/constant'
 import {
-  formatResolution,
-  formatSize, formatSpeedMiB, type Menu, type PluginType, type ProcessType,
-  useAppSettingsStore, useAppStore,
+  formatResolution, formatSpeedMiB, type Menu, type PluginType, type ProcessType,
+  useAppSettingsStore,
   useYtdlpStore
 } from '@/stores'
 import {setIntervalImmediately} from "@/utils";
 import YtdlpForm from "@/views/YtdlpView/components/YtdlpForm.vue";
-import {Events, AppCheckBiliLogin, deleteProcess, Window} from "@/bridge";
+import {AppCheckBiliLogin, deleteProcess,Browser} from "@/bridge";
 import {message} from "ant-design-vue";
 
 
@@ -20,7 +19,6 @@ const appSettingsStore = useAppSettingsStore()
 const ytdlpStore = useYtdlpStore()
 const showForm = ref(false)
 const loginLoad =ref(false)
-
 ytdlpStore.getAllVideoInfo()
 const timer = setIntervalImmediately(ytdlpStore.getAllVideoInfo, 1000)
 
@@ -91,7 +89,6 @@ const deleteVideo = async (id: string) => {
     message.info(data)
   }catch (error :any) {
     message.error(error)
-    return
   }
 }
 
@@ -136,7 +133,7 @@ const deleteVideo = async (id: string) => {
   </div>
 
   <div :class="'grid-list-' + appSettingsStore.app.ytdlpView">
-    <a-card hoverable class="custom-card" size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
+    <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
       <template v-if="appSettingsStore.app.ytdlpView === View.Grid" #cover>
 <!--        <a-image-->
 <!--            v-if = "p.info.thumbnail.length !== 0 "-->
@@ -164,67 +161,120 @@ const deleteVideo = async (id: string) => {
         <!-- 纯圆形遮罩 -->
         <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
       </div>
-
-      <div style="position: absolute;top: 2%;right: 2%;">
-        <Dropdown :trigger="['hover', 'click']">
-          <Button type="link" size="small">
-            <Icon class="icon" icon="more"/>
-          </Button>
-          <template #overlay>
-            <Button v-if="p.progress.process_status == 3" type="link" size="small" @click="reTry(p)">
-              重试
-            </Button>
-            <Button type="link" size="small" @click="deleteVideo(p.id)">
-              {{ t('common.delete') }}
-            </Button>
-          </template>
-        </Dropdown>
-      </div>
       <a-flex vertical gap="small" >
         <a-row :gutter="16">
-<!--          <div>{{ p.id + getTime() }}</div>-->
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.Grid" :span="18" >
+          <a-col :span="18" >
             <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">{{ p.info.title }}</div>
           </a-col>
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.Grid" :span="6" >
-            <a-tag style="height: 20px" color="processing">{{ formatResolution(p.info.resolution) }}</a-tag>
-          </a-col>
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.List" :span="20" >
-            <a-flex>
-              <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">{{ p.info.title }}</div>
-              <a-tag style="height: 20px;margin-left: 8px" color="processing">{{ formatResolution(p.info.resolution) }}</a-tag>
-            </a-flex>
+          <a-col :span="6" >
+            <a-tag style="height: 20px" color="processing">{{  p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
           </a-col>
         </a-row>
         <a-row :gutter="4">
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.Grid" :span="18">
+          <a-col :span="18">
             <a-progress style="display: flex;align-items: center" :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)" size="small" :show-info="false" />
           </a-col>
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.Grid" :span="6" style="display: flex;align-items: center">
+          <a-col :span="6" style="display: flex;align-items: center">
             <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
-          </a-col>
-          <a-col v-if="appSettingsStore.app.ytdlpView === View.List" :span="24">
-            <a-flex>
-              <a-progress
-                  :status="p.progress.process_status===4 ? 'active': undefined"
-                  :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)"
-                  size="small"
-                  :show-info="false"
-              />
-              <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
-            </a-flex>
           </a-col>
         </a-row>
       </a-flex>
+    </Card>
+    <a-card v-if="appSettingsStore.app.ytdlpView === View.List" v-for="(p, index) in ytdlpStore.process" size="small" class="a-card">
+      <!--      View.List-->
+      <div :class="'card-' + appSettingsStore.app.ytdlpView">
+        <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px">
+          <img
+              class="unselectable-image"
+              height="100%"
+              width="100%"
+              :src="p.info.thumbnail"
+              alt=""
+          />
+        </div>
+        <div style="width: 84%">
+          <div style="height: 80%">
+            <div style="height: 40%; display: flex; align-items: center;">
+              <div style="width: 600px;display: flex; ">
+                <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">
+                  {{ p.info.title }}
+                </div>
+                <a-tag color="#108ee9">{{ p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
+              </div>
+              <div style="flex: 1;display: flex;align-items: center;">
+                <div style="width: 73px">
+                  {{ p.info.created_at.substring(0, 10) }}
+                </div>
+                <div class="icon-container">
+                  <a-tooltip color="#ffffff">
+                    <template #title>
+                      <span class="custom-tooltip">打开链接</span>
+                    </template>
+                    <LinkOutlined class="icon-wrapper" @click="Browser.OpenURL(p.url)"/>
+                  </a-tooltip>
+                  <a-tooltip color="#ffffff">
+                    <template #title>
+                      <span class="custom-tooltip">播放视频</span>
+                    </template>
+                    <PlayCircleOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.savedFilePath)"/>
+                  </a-tooltip>
+                  <a-tooltip color="#ffffff">
+                    <template #title>
+                      <span class="custom-tooltip">打开文件目录</span>
+                    </template>
+                    <FolderOpenOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.Path)"/>
+                  </a-tooltip>
+                  <a-tooltip color="#ffffff">
+                    <template #title>
+                      <span class="custom-tooltip">删除记录</span>
+                    </template>
+                    <DeleteOutlined class="icon-wrapper" @click="deleteVideo(p.id)"/>
+                  </a-tooltip>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex">
+            <a-progress
+                style="width:92%"
+                :status="p.progress.process_status===4 ? 'active': undefined"
+                :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)"
+                size="small"
+                :show-info="false"
+            />
+            <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
+          </div>
+        </div>
+      </div>
     </a-card>
-    </div>
 
-  <Modal v-model:open="showForm" max-height="80" :footer="false">
+  </div>
+
+  <Modal v-model:open="showForm" max-height="80" :footer="false" >
     <YtdlpForm />
   </Modal>
 </template>
 
 <style lang="less" scoped>
+.custom-tooltip {
+  color: black; /* 自定义字体颜色 */
+  font-size: 12px; /* 自定义字体大小 */
+}
+.icon-container {
+  margin-left: 20px;
+  display: flex; /* 横向排列图标 */
+  gap: 10px; /* 图标之间的间距 */
+}
+
+.icon-wrapper {
+  font-size:16px;
+  display: inline-block; /* 确保图标适合内容 */
+  cursor: pointer; /* 鼠标悬浮时的光标样式 */
+  &:hover {
+    color: #008316;
+  }
+
+}
 .title-grid {
   display: block;
   align-items: center;
@@ -234,13 +284,34 @@ const deleteVideo = async (id: string) => {
   font-weight: bold;
 }
 .title-list {
-  display: block;
-  align-items: center;
   //flex: 1; /* 让左侧内容占据剩余的所有空间 */
+  //flex: 0 0 70%;
+  margin-right: 8px;
+  max-width: 80%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: bold;
+}
+.a-card{
+  margin: 5px 0;
+  background-color: rgb(243,243,243);
+  border: 1px solid  rgba(232,232,232,0.99);
+  transition:
+      box-shadow 0.4s,
+      background-color 0.4s;
+  &:hover {
+    background-color: var(--card-hover-bg);
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.06);
+  }
+}
+.card-list {
+  width: 100%; /* 子元素宽度为父元素的 100% */
+  //background-color: lightblue; /* 方便观察 */
+  justify-content: center; /* 水平居中 */
+  //padding: 7px 0;
+  height: 80px;
+  display: flex;
 }
 .overlay {
   position: absolute;
@@ -277,10 +348,6 @@ const deleteVideo = async (id: string) => {
   font-size: 48px;
 }
 .unselectable-image {
-  object-fit: contain;
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* Internet Explorer/Edge */
-  user-select: none; /* Non-prefixed version, currently supported by Chrome and Opera */
+  border-radius: 8px; /* 设置圆角 */
 }
 </style>

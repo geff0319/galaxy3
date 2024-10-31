@@ -7,3 +7,6 @@ frontend/dist
 /bridge/translate_test.go
 /logs/
 /bin/
+/bridge/logs/error.log
+/galaxy3.exe
+/bridge/logs/info.log

@@ -66,7 +66,7 @@ func (m *MemoryDB) All() *[]ProcessResponse {
 			Progress: value.(*Process).Progress,
 			Output:   value.(*Process).Output,
 			Params:   value.(*Process).Params,
-			//BiliMeta: value.(*Process).BiliMeta,
+			BiliMeta: *value.(*Process).BiliMeta,
 		})
 		return true
 	})
@@ -118,7 +118,7 @@ func (m *MemoryDB) Restore(basePath string, mq *MessageQueue) {
 			Progress: proc.Progress,
 			Output:   proc.Output,
 			Params:   proc.Params,
-			//BiliMeta: proc.BiliMeta,
+			BiliMeta: &proc.BiliMeta,
 			//Logger:   logger,
 		}
 

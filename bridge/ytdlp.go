@@ -15,7 +15,9 @@ func (a *App) GetVideoMeta(url string) FlagResultWithData {
 	p := &ytdlp.Process{
 		Url:    url,
 		Params: []string{},
-		Output: ytdlp.DownloadOutput{},
+		Output: ytdlp.DownloadOutput{
+			Path: ytdlp.YdpConfig.DownloadPath,
+		},
 	}
 	p.SetPending()
 	if err := p.SetMetadata(); err != nil {
@@ -64,7 +66,9 @@ func (a *App) DownloadYoutube(url string, params []string) FlagResult {
 	p := &ytdlp.Process{
 		Url:    url,
 		Params: params,
-		Output: ytdlp.DownloadOutput{},
+		Output: ytdlp.DownloadOutput{
+			Path: ytdlp.YdpConfig.DownloadPath,
+		},
 	}
 	id := ytdlp.YdpConfig.Mdb.Set(p)
 	ytdlp.YdpConfig.Mq.Publish(p)
@@ -128,7 +132,7 @@ func (a *App) Delete(id string) FlagResult {
 
 func MqNotifyConsumer() {
 	err := ytdlp.YdpConfig.Mq.SetConsumer("notify", func(level, data string) {
-		MainWin.EmitEvent("notify", level, data)
+		MainWin.EmitEvent("notify", false, level, data)
 	})
 	if err != nil {
 		gefflog.Err(err.Error())

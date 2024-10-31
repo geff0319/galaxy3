@@ -38,7 +38,7 @@ tasks:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -ldflags="-w -s -H windowsgui"{{else}}-gcflags=all="-l"{{end}}'
     env:
       GOOS: windows
-      CGO_ENABLED: 0
+      CGO_ENABLED: 1
       GOARCH: '{{.ARCH | default ARCH}}'
       PRODUCTION: '{{.PRODUCTION | default "false"}}'
 
@@ -390,7 +390,8 @@ tasks:
       - "frontend/bindings/**/*"
     cmds:
       # For a complete list of options, run `wails3 generate bindings -help`
-      - wails3 generate bindings -silent -ts
+#      - wails3 generate bindings -silent -ts
+      -  wails3 generate bindings -ts -i -d "frontend/src/bindings"
       # - wails3 generate bindings -silent
 
   go:mod:tidy:

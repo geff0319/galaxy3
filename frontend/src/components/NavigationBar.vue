@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import router from "@/router";
 
 import rawRoutes from '@/router/routes'
 
 const { t } = useI18n()
 
 const routes = rawRoutes.filter((r) => !r.meta?.hidden)
-// const routes = router.getRoutes().filter((r) => !r.meta?.hidden)
 </script>
 
 <template>

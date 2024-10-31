@@ -72,14 +72,28 @@ const change = (v:any)=>{
     </div>
   </div>
   </div>
-  <a-textarea v-model:value="translateStore.trans.originalText" placeholder="请输入原文" :auto-size="{ minRows: 8 }" class="textarea-item"/>
-  <a-textarea v-model:value="translateStore.trans.translationText" :auto-size="{ minRows: 8 }" disabled class="textarea-item"/>
+  <textarea v-model="translateStore.trans.originalText" placeholder="请输入原文" class="textarea-item" style="background-color: rgb(243,243,243);cursor:text;"></textarea>
+  <textarea v-model="translateStore.trans.translationText"  disabled class="textarea-item"></textarea>
 
 </template>
 
 <style lang="less" scoped>
 .textarea-item {
-  margin-top: 8px;
+  resize: none;
+  transition:
+      box-shadow 0.4s,
+      background-color 0.4s;
+  font-size: 14px;
+  font-family: "幼圆", "Yu Yuan", sans-serif; /* 设置幼圆字体 */
+  height: 50%;
+  margin: 5px 0;
+  background-color: #dcdcdc;
+  width: 100%;
+  padding: 7px;
+  border: 1px solid  #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  outline: none; /* 去除默认聚焦边框 */
 }
 .select-language {
   min-width: 350px;

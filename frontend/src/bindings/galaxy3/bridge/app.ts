@@ -89,6 +89,14 @@ export function FileExists(path: string): Promise<$models.FlagResult> & { cancel
     return $resultPromise;
 }
 
+/**
+ * 返回option窗口展示位置，展示在鼠标正下方
+ */
+export function GetBelowWinPos(winWidth: number, winHeight: number): Promise<$models.FlagResultWithData> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(4247551374, winWidth, winHeight) as any;
+    return $resultPromise;
+}
+
 export function GetEnv(): Promise<$models.EnvResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(2450364276) as any;
     return $resultPromise;
@@ -119,6 +127,11 @@ export function HttpDelete(url: string, header: { [_: string]: string } | null, 
 
 export function HttpGet(url: string, header: { [_: string]: string } | null, proxy: string): Promise<$models.HTTPResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(166310981, url, header, proxy) as any;
+    return $resultPromise;
+}
+
+export function HttpHead(url: string, headers: { [_: string]: string } | null): Promise<$models.HTTPResult> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(1565176561, url, headers) as any;
     return $resultPromise;
 }
 

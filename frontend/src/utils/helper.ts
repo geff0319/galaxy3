@@ -6,9 +6,9 @@ import {
   GetEnv,
   // WindowFullscreen,
   // WindowIsFullscreen,
-  // WindowUnfullscreen
+  // WindowUnfullscreen,
 } from '@/bridge'
-import {Window} from "@wailsio/runtime";
+import {Window,Application} from "@wailsio/runtime";
 // import { Persist } from "@/bindings/galaxy3/bridge/app";
 
 // Permissions Helper
@@ -234,8 +234,9 @@ export const exitApp = async () => {
       } catch (error: any) {
           window.Plugins.message.error(error)
       }
-      await Window.Close()
-      // ExitApp()
+      // await Application.Quit
+      // await Window.Close()
+      ExitApp()
   })
 
 }

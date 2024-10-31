@@ -1,6 +1,5 @@
 package bridge
 
-import "C"
 import (
 	"bytes"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"time"
 )
 
 func WindowMask(width, height int) []byte {
@@ -43,6 +43,7 @@ func InitMianWin() {
 		DevToolsEnabled: true,
 		DisableResize:   true,
 		Centered:        true,
+		Hidden:          true,
 		//ShouldClose: func(window *application.WebviewWindow) bool {
 		//	b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
 		//	if err != nil {
@@ -80,6 +81,13 @@ func InitMianWin() {
 		fmt.Println("quit app ")
 		MainWin.EmitEvent("beforeClose")
 	})
+	MainWin.RegisterHook(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+		MainWin.EmitEvent("appInit")
+		time.Sleep(200 * time.Millisecond)
+		MainWin.Show()
+	})
+
+	//YtdlpWinShow()
 }
 
 func InitWidgetsWin() {
@@ -111,26 +119,53 @@ func YtdlpWinShow() {
 	win := MainApp.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
 		Title:           "解析链接",
 		Name:            id,
+		Width:           480,
+		Height:          220,
 		Frameless:       true,
 		DisableResize:   true,
 		Hidden:          true,
 		AlwaysOnTop:     true,
 		Centered:        true,
 		DevToolsEnabled: true,
-		Windows: application.WindowsWindow{
+		Windows:         application.WindowsWindow{
 			//BackdropType:        application.Acrylic,
-			WindowMask:          WindowMask(600, 230),
-			WindowMaskDraggable: true,
+			//WindowMask:          WindowMask(600, 230),
+			//WindowMaskDraggable: true,
 			//ExStyle:             w32.WS_EX_TOOLWINDOW,
 		},
 		//BackgroundType: application.BackgroundTypeTranslucent,
 		BackgroundColour: application.NewRGB(33, 37, 41),
 		URL:              "#/ytdlpWidgets",
 	})
-	win.RegisterHook(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
-		win.Show()
-		fmt.Println(id)
-		win.EmitEvent("winId", id)
-	})
 
+	win.RegisterHook(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
+		OptionShow(id)
+		time.Sleep(200 * time.Millisecond)
+		win.Show()
+	})
+}
+
+func OptionShow(fatherId string) {
+	fmt.Println(fatherId + "option")
+	win := MainApp.NewWebviewWindowWithOptions(application.WebviewWindowOptions{
+		Title:         "选项",
+		Name:          fatherId + "option",
+		Width:         150,
+		Height:        170,
+		Frameless:     true,
+		DisableResize: true,
+		Hidden:        true,
+		AlwaysOnTop:   true,
+		//Centered:        true,
+		DevToolsEnabled: true,
+		Windows: application.WindowsWindow{
+			//WindowMask: WindowMask(150, 170),
+			ExStyle: w32.WS_EX_TOOLWINDOW,
+		},
+		BackgroundColour: application.NewRGB(33, 37, 41),
+		URL:              "#/option",
+	})
+	win.RegisterHook(events.Common.WindowLostFocus, func(e *application.WindowEvent) {
+		win.Hide()
+	})
 }

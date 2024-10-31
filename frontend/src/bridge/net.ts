@@ -136,3 +136,13 @@ export const HttpPut = async <T = any>(url: string, headers: HttpHeader = {}, bo
 
   return transformResponse<T>(header as Record<string, string[]>, _body)
 }
+export const HttpHead = async <T = any>(url: string, headers: HttpHeader = {}, body = {}) => {
+  const { header: _header } = transformRequest(headers, null)
+
+  const { flag, header, body: _body } = await App.HttpHead(url, _header)
+  if (!flag) {
+    throw _body
+  }
+
+  return transformResponse<T>(header as Record<string, string[]>, _body)
+}

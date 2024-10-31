@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref} from 'vue'
-
+//
 import * as Stores from '@/stores'
 import {
   Events,
@@ -12,13 +12,14 @@ import { useMessage, usePicker, useConfirm, usePrompt, useAlert } from '@/hooks'
 import AboutView from '@/views/AboutView.vue'
 import SplashView from '@/views/SplashView.vue'
 import CommandView from './views/CommandView.vue'
-import { NavigationBar, MainPage, TitleBar } from '@/components'
+import { NavigationBar,MainPage, TitleBar } from '@/components'
 import WidgetsView from "@/views/WidgetsView.vue";
 import { useRouter,useRoute } from 'vue-router';
+import {message as antmessage} from "ant-design-vue/es/components";
+const route = useRoute();
+const router = useRouter();
 
-const route = useRoute()
-
-const loading =ref(true)
+const loading =ref(false)
 const envStore = Stores.useEnvStore()
 const appStore = Stores.useAppStore()
 const pluginsStore = Stores.usePluginsStore()
@@ -38,92 +39,107 @@ window.Plugins.confirm = confirm
 window.Plugins.prompt = prompt
 window.Plugins.alert = alert
 
+Events.Once("appInit", function(event:any) {
+  window.addEventListener('beforeunload', scheduledTasksStore.removeScheduledTasks)
+  appSettings.setupAppSettings().then(async () => {
+    await Promise.all([
+      ignoredError(envStore.setupEnv),
+      ignoredError(pluginsStore.setupPlugins),
+      ignoredError(scheduledTasksStore.setupScheduledTasks),
+      ignoredError(wsClientStore.setupWsSettings)
+    ])
+    await sleep(1000)
 
-// EventsOn('launchArgs', async (args: string[]) => {
-//   console.log('launchArgs', args)
-//   const url = new URL(args[0])
-//   if (url.pathname === '//install-config/') {
-//     const _url = url.searchParams.get('url')
-//     const _name = url.searchParams.get('name') || sampleID()
-//
-//     if (!_url) {
-//       message.error('URL missing')
-//       return
-//     }
-//
-//     try {
-//       await subscribesStore.importSubscribe(_name, _url)
-//       message.success('common.success')
-//     } catch (error: any) {
-//       message.error(error)
-//     }
-//   }
-// })
-
-Events.On('beforeClose', async () => {
-  exitApp()
-})
-console.log(route.path)
-
-window.addEventListener('beforeunload', scheduledTasksStore.removeScheduledTasks)
-
-
-appSettings.setupAppSettings().then(async () => {
-  await Promise.all([
-    ignoredError(envStore.setupEnv),
-    ignoredError(pluginsStore.setupPlugins),
-    ignoredError(scheduledTasksStore.setupScheduledTasks),
-    ignoredError(wsClientStore.setupWsSettings)
-  ])
-  await sleep(1000)
-
-  loading.value = false
-
-  try {
-    await pluginsStore.onStartupTrigger()
-  } catch (error: any) {
-    message.error(error)
+    try {
+      await pluginsStore.onStartupTrigger()
+    } catch (error: any) {
+      message.error(error)
+    }
+  })
+  Events.On('beforeClose',  () => {
+    exitApp()
+  })
+  console.log('notify!!!!!')
+  // 0：是否切换页面 1：等级 2：消息
+  Events.On('notify',(event:any)=>{
+    if(event.data[0]){
+      router.push({path: '/ytdlp'})
+      const w = Window.Get('MainWin')
+      w.IsFocused().then((status)=>{
+        console.log(status)
+        if (!status){
+          w.Show()
+          w.Focus()
+        }
+      })
+    }
+    console.log(event)
+    switch (event.data[1]) {
+      case "info":
+        antmessage.info(event.data[2],3);
+        break;
+      case "error":
+        antmessage.error(event.data[2],3)
+        break;
+      case "warn":
+        antmessage.warn(event.data[2],3);
+        break;
+      default:
+        antmessage.info(event.data[2],3)
+        break;
+    }
+  })
+//ws
+  if(wsClientStore.ws.autoConnect){
+    try {
+      wsClientStore.connectWs()
+    }catch (error){
+      antmessage.error("ws连接失败：" + error)
+    }
   }
+  loading.value = false
 })
+
 
 </script>
 
 <template>
-  <SplashView v-if="loading && route.path !== '/ytdlpWidgets'" />
+<!--  <SplashView v-if="loading && route.path !== '/ytdlpWidgets'" />-->
 <!--  <template v-else-if="appStore.widgetsEnable"><widgetsView /></template>-->
 <!--  <template v-else-if="!appStore.widgetsEnable">-->
-  <template v-else-if="!route.meta.newlayout">
+  <meta name="referrer" content="no-referrer">
+  <template v-if="!route.meta.newlayout">
     <TitleBar />
     <div class="main">
       <NavigationBar />
       <MainPage />
     </div>
+
+    <Modal
+        v-model:open="appStore.showAbout"
+        :cancel="false"
+        :submit="false"
+        mask-closable
+        min-width="50"
+    >
+      <AboutView />
+    </Modal>
+
+    <Menu
+        v-model="appStore.menuShow"
+        :position="appStore.menuPosition"
+        :menu-list="appStore.menuList"
+    />
+
+    <Tips
+        v-model="appStore.tipsShow"
+        :position="appStore.tipsPosition"
+        :message="appStore.tipsMessage"
+    />
+
+    <CommandView />
   </template>
-  <template v-else-if="route.meta.newlayout"><WidgetsView /></template>
-
-  <Modal
-    v-model:open="appStore.showAbout"
-    :cancel="false"
-    :submit="false"
-    mask-closable
-    min-width="50"
-  >
-    <AboutView />
-  </Modal>
-
-  <Menu
-    v-model="appStore.menuShow"
-    :position="appStore.menuPosition"
-    :menu-list="appStore.menuList"
-  />
-
-  <Tips
-    v-model="appStore.tipsShow"
-    :position="appStore.tipsPosition"
-    :message="appStore.tipsMessage"
-  />
-
-  <CommandView />
+  <template v-else><WidgetsView /></template>
 </template>
 
 <style scoped>

@@ -1,6 +1,7 @@
 package ytdlp
 
 import (
+	"galaxy3/bridge/website"
 	"github.com/ge-fei-fan/gefflog"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -73,13 +74,13 @@ type Format struct {
 // struct representing the response sent to the client
 // as JSON-RPC result field
 type ProcessResponse struct {
-	Id       string           `json:"id"`
-	Url      string           `json:"url"`
-	Progress DownloadProgress `json:"progress"`
-	Info     DownloadInfo     `json:"info"`
-	Output   DownloadOutput   `json:"output"`
-	Params   []string         `json:"params"`
-	//BiliMeta *website.BiliMetadata `json:"biliMeta"`
+	Id       string               `json:"id"`
+	Url      string               `json:"url"`
+	Progress DownloadProgress     `json:"progress"`
+	Info     DownloadInfo         `json:"info"`
+	Output   DownloadOutput       `json:"output"`
+	Params   []string             `json:"params"`
+	BiliMeta website.BiliMetadata `json:"biliMeta"`
 }
 
 // struct representing the current status of the memoryDB

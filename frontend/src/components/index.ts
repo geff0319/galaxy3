@@ -6,7 +6,7 @@ export { default as NavigationBar } from './NavigationBar.vue'
 
 type GlobFuncType = Record<string, { default: Component }>
 
-const Components: GlobFuncType = import.meta.glob('./*/FlipClock.vue', { eager: true })
+const Components: GlobFuncType = import.meta.glob('./*/index.vue', { eager: true })
 
 export default {
   install: (app: App) => {

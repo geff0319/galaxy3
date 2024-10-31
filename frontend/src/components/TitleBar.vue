@@ -6,11 +6,13 @@ import {type Menu, useAppSettingsStore, useKernelApiStore, useEnvStore} from '@/
 import {
   WML,
   Window,
+  Events
 } from '@/bridge'
 import * as Stores from "@/stores";
+import {useRouter} from "vue-router";
 
-const emits = defineEmits(['changeWin'])
-
+// const emits = defineEmits(['changeWin'])
+console.log('titleBar')
 const isPinned = ref(false)
 const isFullScreen = ref(false)
 
@@ -18,16 +20,16 @@ const appSettingsStore = useAppSettingsStore()
 const kernelApiStore = useKernelApiStore()
 const envStore = useEnvStore()
 const appStore = Stores.useAppStore()
-
+const router = useRouter();
 
 
 const pinWindow = () => {
   isPinned.value = !isPinned.value
   Window.SetAlwaysOnTop(isPinned.value)
-  // WindowSetAlwaysOnTop(isPinned.value)
 }
 const enableWidgets = async() => {
   const win = Window.Get("WidgetsWin")
+  Events.Emit({name:'winType', data:['widget']})
   await win.SetRelativePosition(1400, 100).then(win.Show)
   // await win.OpenDevTools()
   // ShowWidgets()
@@ -48,7 +50,7 @@ const closeWindow = async () => {
 const menus: Menu[] = [
   {
     label: 'titlebar.reload',
-    handler: WML.Reload
+    handler: Window.Reload
   }
 ]
 </script>

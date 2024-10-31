@@ -14,6 +14,8 @@ import TranslationView from '@/views/TranslationView/index.vue'
 import YtdlpView from '@/views/YtdlpView/index.vue'
 import WidgetsView from '@/views/WidgetsView.vue'
 import YtdlpWidgetView from '@/views/YtdlpView/YtdlpWidget.vue'
+import OptionView from '@/components/Option/index.vue'
+import SplashView from '@/views/SplashView.vue'
 
 
 const routes: RouteRecordRaw[] = [
@@ -23,6 +25,8 @@ const routes: RouteRecordRaw[] = [
     component: HomeView,
     meta: {
       name: 'router.overview',
+      newlayout: false,
+      keepAlive:true
     }
   },
   {
@@ -32,6 +36,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       name: 'router.profiles',
       hidden: !isDev,
+      keepAlive:true
     }
   },
   {
@@ -40,7 +45,8 @@ const routes: RouteRecordRaw[] = [
     component: SubscribesView,
     meta: {
       name: 'router.subscriptions',
-      hidden: !isDev
+      hidden: !isDev,
+      keepAlive:true
     }
   },
   {
@@ -49,7 +55,8 @@ const routes: RouteRecordRaw[] = [
     component: RulesetsView,
     meta: {
       name: 'router.rulesets',
-      hidden: !isDev
+      hidden: !isDev,
+      keepAlive:true
     }
   },
   {
@@ -58,6 +65,7 @@ const routes: RouteRecordRaw[] = [
     component: PluginsView,
     meta: {
       name: 'router.plugins',
+      keepAlive:true
     }
   },
   {
@@ -66,6 +74,7 @@ const routes: RouteRecordRaw[] = [
     component: TranslationView,
     meta: {
       name: 'router.translation',
+      keepAlive:true
     }
   },
   {
@@ -74,6 +83,7 @@ const routes: RouteRecordRaw[] = [
     component: YtdlpView,
     meta: {
       name: '下载',
+      keepAlive:false
     }
   },
   {
@@ -84,6 +94,7 @@ const routes: RouteRecordRaw[] = [
       name: '小组件',
       newlayout: true,
       hidden: true,
+      keepAlive:true
     }
   },
   {
@@ -93,7 +104,8 @@ const routes: RouteRecordRaw[] = [
     meta: {
       name: 'ytdlp组件',
       newlayout: true,
-      hidden: true
+      hidden: true,
+      keepAlive:true
     }
   },
   {
@@ -102,6 +114,7 @@ const routes: RouteRecordRaw[] = [
     component: ScheduledTasksView,
     meta: {
       name: 'router.scheduledtasks',
+      keepAlive:true
     }
   },
   {
@@ -110,6 +123,7 @@ const routes: RouteRecordRaw[] = [
     component: SettingsView,
     meta: {
       name: 'router.settings',
+      keepAlive:true
     }
   },
   {
@@ -119,7 +133,18 @@ const routes: RouteRecordRaw[] = [
     meta: {
       name: 'Playground',
       // hidden: !isDev
+      keepAlive:true
     }
+  },
+  {
+    path: '/option',
+    name: 'Option',
+    component: OptionView,
+    meta: {
+      name: 'option组件',
+      newlayout: true,
+      keepAlive:true
+    },
   }
 ]
 

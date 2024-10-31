@@ -56,7 +56,7 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     lang: Lang.ZH,
     theme: Theme.Light,
     color: Color.Default,
-    'font-family': '"Microsoft Yahei", "Arial", sans-serif, "Twemoji Mozilla"',
+    'font-family': '"幼圆", "Yu Yuan", sans-serif;',
     profilesView: View.Grid,
     subscribesView: View.Grid,
     rulesetsView: View.Grid,
@@ -154,9 +154,11 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
   const setAppTheme = (theme: Theme.Dark | Theme.Light) => {
     if (document.startViewTransition) {
       document.startViewTransition(() => {
-        document.body.setAttribute('theme-mode', theme)
+        // console.log('set1'+theme)
+        // document.body.setAttribute('theme-mode', theme)
       })
     } else {
+      console.log('set2'+theme)
       document.body.setAttribute('theme-mode', theme)
     }
     // WindowSetSystemDefaultTheme()
