@@ -143,6 +143,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       name: 'option组件',
       newlayout: true,
+      hidden: true,
       keepAlive:true
     },
   }
