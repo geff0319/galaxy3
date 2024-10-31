@@ -78,7 +78,10 @@ jobs:
           GOOS: ${{ matrix.build.GOOS }}
           GOARCH: ${{ matrix.build.GOARCH }}
         # run: ~/go/bin/wails build -m -s -trimpath -skipbindings -devtools -tags webkit2_41 -o ${{ env.APP_NAME }}.exe
-        run: go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
+        #run: go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
+        run: |
+          wails3 generate bindings -ts -i -d "frontend/src/bindings"
+          go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
 
       # Compress: macOS
       - name: Create a compressed file for macOS
