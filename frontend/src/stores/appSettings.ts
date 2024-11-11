@@ -7,6 +7,7 @@ import {debounce} from '@/utils'
 import {Readfile, Writefile} from '@/bridge'
 // import { Readfile, Writefile } from "@/bindings/galaxy3/bridge/app";
 import {Color, Colors, Lang, Theme, View, WindowStartState} from '@/constant'
+import {AppChangeLog} from "@/bridge/utils";
 
 type AppSettings = {
   lang: Lang
@@ -44,6 +45,7 @@ type AppSettings = {
   addPluginToMenu: boolean
   pluginSettings: Record<string, Record<string, any>>
   translate: Record<string, string>
+  logPath:string
 }
 
 export const useAppSettingsStore = defineStore('app-settings', () => {
@@ -122,7 +124,8 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     translate: {
       tencentTanslateSecretId: '请输入tencentTanslateSecretId',
       tencentTanslateSecretKey: '请输入tencentTanslateSecretKey'
-    }
+    },
+    logPath:''
   })
 
   const saveAppSettings = debounce((config: string) => {
@@ -176,6 +179,7 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     document.documentElement.style.setProperty('--primary-color', primary)
     document.documentElement.style.setProperty('--secondary-color', secondary)
     document.body.style.fontFamily = settings['font-family']
+    AppChangeLog(0,settings.logPath)
   }
 
   watch(

@@ -27,6 +27,7 @@ const disConnectWs= async ()=>{
   loading.value=false
 }
 const initWs = () => {
+  console.log(appWsClient.ws.autoConnect)
   loading.value=true
   try{
     appWsClient.connectionStatus()

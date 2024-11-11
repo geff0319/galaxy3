@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { useRoute,useRouter } from 'vue-router';
-import {Events, Window} from "@/bridge";
-import {message as antmessage} from "ant-design-vue/es/components";
-import * as Stores from "@/stores";
-
 
 </script>
 

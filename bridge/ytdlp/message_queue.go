@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	evbus "github.com/asaskevich/EventBus"
-	gefflog "github.com/ge-fei-fan/gefflog"
+	"github.com/ge-fei-fan/gefflog"
 	"golang.org/x/sync/semaphore"
 )
 

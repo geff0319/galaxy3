@@ -1,6 +1,7 @@
 package bridge
 
 import (
+	"github.com/ge-fei-fan/gefflog"
 	"github.com/go-vgo/robotgo"
 	"github.com/lxn/win"
 	"log"
@@ -120,4 +121,8 @@ func (a *App) GetBelowWinPos(winWidth, winHeight int) FlagResultWithData {
 	}
 
 	return FlagResultWithData{true, "", map[string]int{"dstX": dstX, "dstY": dstY}}
+}
+func (a *App) ChangeLog(level byte, path string) {
+	gefflog.ChangeLogger(level, path)
+	gefflog.Info("修改应用日志：" + path)
 }

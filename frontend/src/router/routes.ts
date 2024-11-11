@@ -132,7 +132,7 @@ const routes: RouteRecordRaw[] = [
     component: PlaygroundView,
     meta: {
       name: 'Playground',
-      // hidden: !isDev
+      hidden: !isDev,
       keepAlive:true
     }
   },

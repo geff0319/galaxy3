@@ -46,6 +46,7 @@ type AppConfig struct {
 	UserAgent        string    `yaml:"userAgent"`
 	ExitOnClose      bool      `yaml:"exitOnClose"`
 	Translate        Translate `yaml:"translate"`
+	LogPath          string    `yaml:"logPath"`
 }
 
 type MenuItem struct {

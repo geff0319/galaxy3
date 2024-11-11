@@ -46,7 +46,6 @@ Events.Once("appInit", function(event:any) {
       ignoredError(envStore.setupEnv),
       ignoredError(pluginsStore.setupPlugins),
       ignoredError(scheduledTasksStore.setupScheduledTasks),
-      ignoredError(wsClientStore.setupWsSettings)
     ])
     await sleep(1000)
 
@@ -89,14 +88,16 @@ Events.Once("appInit", function(event:any) {
         break;
     }
   })
-//ws
-  if(wsClientStore.ws.autoConnect){
-    try {
-      wsClientStore.connectWs()
-    }catch (error){
-      antmessage.error("ws连接失败：" + error)
+  //ws
+  wsClientStore.setupWsSettings().then(()=>{
+    if(wsClientStore.ws.autoConnect){
+      try {
+        wsClientStore.connectWs()
+      }catch (error){
+        antmessage.error("ws连接失败：" + error)
+      }
     }
-  }
+  })
   loading.value = false
 })
 

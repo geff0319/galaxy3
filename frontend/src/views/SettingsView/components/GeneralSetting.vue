@@ -6,7 +6,7 @@ import { useMessage } from '@/hooks'
 import { useAppSettingsStore, useEnvStore } from '@/stores'
 import { Theme, Lang, WindowStartState, Color } from '@/constant'
 import { APP_TITLE, APP_VERSION, getTaskSchXmlString } from '@/utils'
-import { GetEnv, Writefile, Removefile, Browser } from '@/bridge'
+import {GetEnv, Writefile, Removefile, Browser, OpenDirectoryDialog} from '@/bridge'
 import {
   QuerySchTask,
   CreateSchTask,
@@ -104,9 +104,27 @@ const onPermChange = async (v: boolean) => {
 
 const handleOpenFolder = async () => {
   const { basePath } = await GetEnv()
-  Browser.OpenURL(basePath)
+  await Browser.OpenURL(basePath)
 }
-
+const handleOpenLogFolder = async () => {
+  const { basePath } = await GetEnv()
+  if(appSettings.app.logPath === ''){
+    console.log(basePath+ "/log")
+    await Browser.OpenURL(basePath+ "/log")
+  }else {
+    await Browser.OpenURL(appSettings.app.logPath)
+  }
+}
+const handelSelectLogFolderDialog =async ()=>{
+  try {
+    const folder = await  OpenDirectoryDialog()
+    if (folder.length!==0) {
+      appSettings.app.logPath = folder
+    }
+  }catch (error :any){
+    message.error("选择文件夹失败")
+  }
+}
 const checkSchtask = async () => {
   try {
     await QuerySchTask(APP_TITLE)
@@ -164,22 +182,22 @@ if (envStore.env.os === 'windows') {
 
 <template>
   <div class="settings">
-    <div class="settings-item">
-      <div class="title">
-        {{ t('settings.theme.name') }}
-      </div>
-      <Radio v-model="appSettings.app.theme" @click="onThemeClick" :options="themes" />
-    </div>
+<!--    <div class="settings-item">-->
+<!--      <div class="title">-->
+<!--        {{ t('settings.theme.name') }}-->
+<!--      </div>-->
+<!--      <Radio v-model="appSettings.app.theme" @click="onThemeClick" :options="themes" />-->
+<!--    </div>-->
 <!--    <div class="settings-item">-->
 <!--      <div class="title">-->
 <!--        {{ t('settings.color.name') }}-->
 <!--      </div>-->
 <!--      <Radio v-model="appSettings.app.color" :options="colors" />-->
 <!--    </div>-->
-    <div class="settings-item">
-      <div class="title">{{ t('settings.lang.name') }}</div>
-      <Radio v-model="appSettings.app.lang" :options="langs" />
-    </div>
+<!--    <div class="settings-item">-->
+<!--      <div class="title">{{ t('settings.lang.name') }}</div>-->
+<!--      <Radio v-model="appSettings.app.lang" :options="langs" />-->
+<!--    </div>-->
 <!--    <div class="settings-item">-->
 <!--      <div class="title">{{ t('settings.fontFamily') }}</div>-->
 <!--      <div style="display: flex; align-items: center">-->
@@ -192,9 +210,19 @@ if (envStore.env.os === 'windows') {
     <div class="settings-item">
       <div class="title">{{ t('settings.appFolder.name') }}</div>
       <Button @click="handleOpenFolder" type="primary">
-<!--        <Icon icon="folder" fill="var(&#45;&#45;btn-primary-color)" />-->
         <FolderOpenOutlined />
         <span style="margin-left: 8px">{{ t('settings.appFolder.open') }}</span>
+      </Button>
+    </div>
+    <div class="settings-item">
+      <div class="title">日志</div>
+      <Button @click="handleOpenLogFolder" type="primary">
+        <FolderOpenOutlined />
+        <span style="margin-left: 8px">打开日志目录</span>
+      </Button>
+      <Button @click="handelSelectLogFolderDialog" type="primary">
+        <FolderOpenOutlined />
+        <span style="margin-left: 8px">设置目录路径</span>
       </Button>
     </div>
     <div class="settings-item">

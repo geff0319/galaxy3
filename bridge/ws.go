@@ -120,7 +120,9 @@ func nextMessage() {
 			p := &ytdlp.Process{
 				Url:    url,
 				Params: []string{},
-				Output: ytdlp.DownloadOutput{},
+				Output: ytdlp.DownloadOutput{
+					Path: ytdlp.YdpConfig.DownloadPath,
+				},
 			}
 			ytdlp.YdpConfig.Mdb.Set(p)
 			ytdlp.YdpConfig.Mq.Publish(p)

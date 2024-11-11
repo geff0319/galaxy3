@@ -7,3 +7,7 @@ export const AppGetBelowWinPos = async (x:number,y:number) => {
     }
     return data
 }
+
+export const AppChangeLog = async (level:number,path:string) => {
+     await App.ChangeLog(level,path)
+}

@@ -29,6 +29,11 @@ export function All(): Promise<$models.FlagResultWithData> & { cancel(): void } 
     return $resultPromise;
 }
 
+export function ChangeLog(level: number, path: string): Promise<void> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(803743903, level, path) as any;
+    return $resultPromise;
+}
+
 export function CheckBiliLogin(): Promise<$models.FlagResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(4153684584) as any;
     return $resultPromise;

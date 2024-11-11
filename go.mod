@@ -6,7 +6,7 @@ require (
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/coder/websocket v1.8.12
 	github.com/energye/systray v1.0.2
-	github.com/ge-fei-fan/gefflog v0.1.3
+	github.com/ge-fei-fan/gefflog v0.1.4
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/go-vgo/robotgo v0.110.5
 	github.com/google/uuid v1.6.0

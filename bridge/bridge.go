@@ -3,13 +3,11 @@ package bridge
 import (
 	_ "embed"
 	"galaxy3/bridge/ytdlp"
+	"github.com/ge-fei-fan/gefflog"
 	"github.com/klauspost/cpuid/v2"
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"io/fs"
-
-	//"github.com/wailsapp/wails/v2/pkg/options"
-	//R "github.com/wailsapp/wails/v2/pkg/runtime"
 	"gopkg.in/yaml.v3"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -71,6 +69,8 @@ func InitBridge(assets fs.FS) {
 	}
 
 	ytdlp.InitYtDlpConfig(Env.BasePath)
+	gefflog.ChangeLogger(0, Config.LogPath)
+
 	MainApp = application.New(application.Options{
 		Name:        "galaxy3",
 		Description: "galaxy3",
