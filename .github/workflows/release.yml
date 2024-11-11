@@ -1,4 +1,4 @@
-name: Build Galaxy
+name: Build Galaxy3
 
 on:
   push:
@@ -35,8 +35,8 @@ jobs:
           #   GOARCH: arm64
     runs-on: ${{ matrix.build.os }}
     env:
-      APP_NAME: Galaxy
-      ZIP_FILE: Galaxy-${{ matrix.build.GOOS }}-${{ matrix.build.GOARCH }}.zip
+      APP_NAME: Galaxy3
+      ZIP_FILE: Galaxy3-${{ matrix.build.GOOS }}-${{ matrix.build.GOARCH }}.zip
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
