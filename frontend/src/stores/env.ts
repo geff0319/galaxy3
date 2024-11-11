@@ -8,7 +8,7 @@ import { SetSystemProxy, GetSystemProxy } from '@/utils'
 
 export const useEnvStore = defineStore('env', () => {
   const env = ref({
-    appName: 'Galaxy.exe',
+    appName: 'Galaxy3.exe',
     basePath: 'path/to/Galaxy',
     os: 'windows',
     arch: 'amd64',

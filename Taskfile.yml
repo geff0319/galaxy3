@@ -1,7 +1,7 @@
 version: '3'
 
 vars:
-  APP_NAME: "galaxy3"
+  APP_NAME: "Galaxy3"
   BIN_DIR: "bin"
   VITE_PORT: '{{.WAILS_VITE_PORT | default 9245}}'
 
@@ -33,7 +33,7 @@ tasks:
         vars:
           ARCH: '{{.ARCH}}'
     cmds:
-      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/galaxy3.exe
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/Galaxy3.exe
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -ldflags="-w -s -H windowsgui"{{else}}-gcflags=all="-l"{{end}}'
     env:
@@ -135,7 +135,7 @@ tasks:
         vars:
           ARCH: '{{.ARCH}}'
     cmds:
-      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/galaxy3
+      - go build {{.BUILD_FLAGS}} -o {{.BIN_DIR}}/Galaxy3
     vars:
       BUILD_FLAGS: '{{if eq .PRODUCTION "true"}}-tags production -trimpath -ldflags="-w -s"{{else}}-gcflags=all="-l"{{end}}'
     env:

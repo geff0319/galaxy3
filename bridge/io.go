@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"compress/gzip"
 	"fmt"
+	"github.com/ge-fei-fan/gefflog"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"io"
 	"log"
@@ -57,12 +58,13 @@ func (a *App) Movefile(source string, target string) FlagResult {
 }
 
 func (a *App) Removefile(path string) FlagResult {
-	log.Printf("RemoveFile: %s", path)
+	gefflog.Info("RemoveFile: " + path)
 
 	path = GetPath(path)
 
 	err := os.RemoveAll(path)
 	if err != nil {
+		gefflog.Err("RemoveFile: " + err.Error())
 		return FlagResult{false, err.Error()}
 	}
 
