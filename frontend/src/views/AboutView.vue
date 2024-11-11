@@ -90,7 +90,7 @@ const checkForUpdates = async (showTips = false) => {
     if (msg) throw msg
 
     const { os, arch } = envStore.env
-    const assetName = `Galaxy-${os}-${arch}.zip`
+    const assetName = `Galaxy3-${os}-${arch}.zip`
     console.log(assetName)
     const asset = assets.find((v: any) => v.name === assetName)
     if (!asset) throw 'Asset Not Found:' + assetName
