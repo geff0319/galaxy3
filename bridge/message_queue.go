@@ -1,4 +1,4 @@
-package ytdlp
+package bridge
 
 import (
 	"context"
@@ -42,6 +42,7 @@ func (m *MessageQueue) Publish(p *Process) {
 
 	m.eventBus.Publish(queueName, p)
 }
+
 func (m *MessageQueue) PublishByTopic(topic string, p *Process) {
 	m.eventBus.Publish(topic, p)
 }
@@ -61,12 +62,12 @@ func (m *MessageQueue) downloadConsumer() {
 		sem.Acquire(context.Background(), 1)
 		defer sem.Release(1)
 
-		gefflog.Info(fmt.Sprintf("下载开始：received process from event bus bus=%s consumer=downloadConsumer id=%s", queueName, p.getShortId()))
+		gefflog.Info(fmt.Sprintf("下载开始：received process from event bus bus=%s consumer=downloadConsumer id=%s", queueName, p.GetShortId()))
 
 		if p.Progress.Status != StatusCompleted {
 			p.Start()
 		}
-		gefflog.Info(fmt.Sprintf("started process bus=%s id=%s", queueName, p.getShortId()))
+		gefflog.Info(fmt.Sprintf("started process bus=%s id=%s", queueName, p.GetShortId()))
 	}, false)
 }
 
@@ -82,15 +83,15 @@ func (m *MessageQueue) metadataSubscriber() {
 		sem.Acquire(context.TODO(), 1)
 		defer sem.Release(1)
 
-		gefflog.Info(fmt.Sprintf("解析开始：received process from event bus bus=%s consumer=metadataConsumer id=%s", queueName, p.getShortId()))
+		gefflog.Info(fmt.Sprintf("解析开始：received process from event bus bus=%s consumer=metadataConsumer id=%s", queueName, p.GetShortId()))
 
 		if p.Progress.Status == StatusCompleted {
-			gefflog.Info(fmt.Sprintf("process has an illegal state id=%s status=%d", p.getShortId(), p.Progress.Status))
+			gefflog.Info(fmt.Sprintf("process has an illegal state id=%s status=%d", p.GetShortId(), p.Progress.Status))
 			return
 		}
 		// 解析失败，设置为解析失败状态
 		if err := p.SetMetadata(); err != nil {
-			gefflog.Err(fmt.Sprintf("failed to retrieve metadata id=%s err=%s", p.getShortId(), err.Error()))
+			gefflog.Err(fmt.Sprintf("failed to retrieve metadata id=%s err=%s", p.GetShortId(), err.Error()))
 			p.Progress.Status = StatusErrored
 			YdpConfig.Mq.eventBus.Publish("notify", false, "error", "解析视频失败："+err.Error())
 			return

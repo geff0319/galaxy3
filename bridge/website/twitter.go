@@ -1,6 +1,8 @@
 package website
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type Twitter struct {
 	sourceUrl string

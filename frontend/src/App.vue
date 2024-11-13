@@ -26,6 +26,7 @@ const pluginsStore = Stores.usePluginsStore()
 const appSettings = Stores.useAppSettingsStore()
 const scheduledTasksStore = Stores.useScheduledTasksStore()
 const wsClientStore = Stores.useWsClientStore()
+const mqttClientStore = Stores.useMqttClientStore()
 
 const { message } = useMessage()
 const { picker } = usePicker()
@@ -89,14 +90,23 @@ Events.Once("appInit", function(event:any) {
     }
   })
   //ws
-  wsClientStore.setupWsSettings().then(()=>{
-    if(wsClientStore.ws.autoConnect){
-      try {
-        wsClientStore.connectWs()
-      }catch (error){
-        antmessage.error("ws连接失败：" + error)
+  // wsClientStore.setupWsSettings().then(()=>{
+  //   if(wsClientStore.ws.autoConnect){
+  //     try {
+  //       wsClientStore.connectWs()
+  //     }catch (error){
+  //       antmessage.error("ws连接失败：" + error)
+  //     }
+  //   }
+  // })
+  mqttClientStore.setupMqttSettings().then(()=>{
+      if(mqttClientStore.mqttInfo.autoConnect){
+        try {
+          mqttClientStore.connectMqtt()
+        }catch (error){
+          antmessage.error("mqtt连接失败：" + error)
+        }
       }
-    }
   })
   loading.value = false
 })

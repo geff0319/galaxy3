@@ -5,6 +5,7 @@ go 1.22.5
 require (
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/coder/websocket v1.8.12
+	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/energye/systray v1.0.2
 	github.com/ge-fei-fan/gefflog v0.1.4
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
@@ -43,6 +44,7 @@ require (
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/jezek/xgb v1.1.1 // indirect

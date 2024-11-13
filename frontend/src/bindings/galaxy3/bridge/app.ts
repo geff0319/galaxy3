@@ -39,6 +39,11 @@ export function CheckBiliLogin(): Promise<$models.FlagResult> & { cancel(): void
     return $resultPromise;
 }
 
+export function ConnectMqtt(mqttInfo: string): Promise<$models.FlagResult> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(3922416949, mqttInfo) as any;
+    return $resultPromise;
+}
+
 export function ConnectWs(domain: string, id: string): Promise<$models.FlagResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1127748881, domain, id) as any;
     return $resultPromise;
@@ -51,6 +56,11 @@ export function Delete(id: string): Promise<$models.FlagResult> & { cancel(): vo
 
 export function DisConnectWs(): Promise<$models.FlagResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(926751891) as any;
+    return $resultPromise;
+}
+
+export function DisconnectMqtt(): Promise<$models.FlagResult> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(146441759) as any;
     return $resultPromise;
 }
 
@@ -215,6 +225,11 @@ export function RestartApp(): Promise<$models.FlagResult> & { cancel(): void } {
 
 export function ShowToolWindow(): Promise<void> & { cancel(): void } {
     let $resultPromise = $Call.ByID(1074210372) as any;
+    return $resultPromise;
+}
+
+export function StatusMqtt(): Promise<$models.FlagResultWithData> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(3209157955) as any;
     return $resultPromise;
 }
 

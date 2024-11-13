@@ -53,7 +53,10 @@ const icons = [
     'file',
     'load',
     'clipboard',
-    'question'
+    'question',
+    'must',
+    'success',
+    'failed'
 ] as const
 
 export default icons

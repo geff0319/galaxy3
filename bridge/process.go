@@ -1,4 +1,4 @@
-package ytdlp
+package bridge
 
 import (
 	"bufio"
@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"galaxy3/bridge/website"
+	"galaxy3/bridge/ytdlp"
 	"github.com/ge-fei-fan/gefflog"
 	"io"
 	"log"
@@ -88,14 +89,15 @@ func (p *Process) Start() {
 	//TODO: it spawn another one ytdlp process, too slow.
 	//go p.GetFileName(&out)
 	//p.Output.SavedFilePath = filepath.Join(YdpConfig.DownloadPath, sanitizeFileName(p.Info.FileName))
-	p.Output.SavedFilePath = filepath.Join(p.Output.Path, sanitizeFileName(p.Info.FileName))
+	p.Output.SavedFilePath = filepath.Join(p.Output.Path, ytdlp.SanitizeFileName(p.Info.FileName))
 	// bilibii下载
 	if strings.Contains(p.Url, "bilibili") {
 		if p.BiliMeta == nil {
 			err := p.SetMetadata()
 			if err != nil {
 				gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-				YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+				//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+				MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
 				p.Progress.Status = StatusErrored
 				return
 			}
@@ -121,7 +123,8 @@ func (p *Process) Start() {
 		err := p.BiliMeta.Download(YdpConfig.BasePath)
 		if err != nil {
 			gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-			YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+			//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+			MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
 			p.Progress.Status = StatusErrored
 			p.BiliMeta.DoneChan <- struct{}{}
 			close(p.BiliMeta.DoneChan)
@@ -148,7 +151,7 @@ func (p *Process) Start() {
 		p.Params = append(p.Params, p.Output.SavedFilePath)
 	}
 	if strings.Contains(p.Url, "x.com") {
-		if !IsFileExist(YdpConfig.BasePath + "/data/yt-dlp/cookies.txt") {
+		if !ytdlp.IsFileExist(YdpConfig.BasePath + "/data/yt-dlp/cookies.txt") {
 			gefflog.Err("下载X视频,cookies.txt不存在")
 		}
 		baseParams = append(baseParams, "--cookies", YdpConfig.BasePath+"/data/yt-dlp/cookies.txt")
@@ -160,7 +163,8 @@ func (p *Process) Start() {
 	// ----------------- main block ----------------- //
 	if !IsYtDlpExist() {
 		gefflog.Err("failed to start ytdlp process: err=ytdlp程序不存在")
-		YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败:ytdlp程序不存在,请下载")
+		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败:ytdlp程序不存在,请下载")
+		MainWin.EmitEvent("notify", false, "error", "启动任务失败:ytdlp程序不存在,请下载")
 		p.Progress.Status = StatusErrored
 		return
 	}
@@ -170,14 +174,16 @@ func (p *Process) Start() {
 	r, err := cmd.StdoutPipe()
 	if err != nil {
 		gefflog.Err(fmt.Sprintf("failed to connect to stdout: err=%s", err.Error()))
-		YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
+		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
+		MainWin.EmitEvent("notify", false, "error", "启动任务失败")
 		p.Progress.Status = StatusErrored
 		return
 	}
 
 	if err := cmd.Start(); err != nil {
 		gefflog.Err(fmt.Sprintf("failed to start ytdlp process: err=%s", err.Error()))
-		YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
+		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
+		MainWin.EmitEvent("notify", false, "error", "启动任务失败")
 		p.Progress.Status = StatusErrored
 		return
 	}
@@ -212,7 +218,7 @@ func (p *Process) Start() {
 
 	// Slows down the unmarshal operation to every 500ms
 	go func() {
-		Sample(time.Millisecond*500, sourceChan, doneChan, func(event []byte) {
+		ytdlp.Sample(time.Millisecond*500, sourceChan, doneChan, func(event []byte) {
 			var progress ProgressTemplate
 
 			if err := json.Unmarshal(event, &progress); err != nil {
@@ -225,7 +231,7 @@ func (p *Process) Start() {
 				Speed:      progress.Speed,
 				ETA:        progress.Eta,
 			}
-			//gefflog.Info(fmt.Sprintf("progress: id=%s, url=%s, percentage=%s", p.getShortId(), p.Url, progress.Percentage))
+			//gefflog.Info(fmt.Sprintf("progress: id=%s, url=%s, percentage=%s", p.GetShortId(), p.Url, progress.Percentage))
 
 		})
 	}()
@@ -244,7 +250,11 @@ func (p *Process) Complete() {
 		Speed:      0,
 		ETA:        0,
 	}
-	gefflog.Info(fmt.Sprintf("finished: id=%s, url=%s", p.getShortId(), p.Url))
+	if MqttC.Client.IsConnectionOpen() {
+		MqttC.Client.Publish(DOWNLOAD_RESULT_TOPIC, 0, false,
+			fmt.Sprintf("[%s]%s: 下载完成", MqttC.opt.ClientID, p.Info.FileName))
+	}
+	gefflog.Info(fmt.Sprintf("finished: id=%s, url=%s", p.GetShortId(), p.Url))
 
 }
 
@@ -305,8 +315,8 @@ func (p *Process) GetFormatsSync() (DownloadFormats, error) {
 	wg.Add(2)
 
 	log.Println(
-		BgRed, "Metadata", Reset,
-		BgBlue, "Formats", Reset,
+		ytdlp.BgRed, "Metadata", ytdlp.Reset,
+		ytdlp.BgBlue, "Formats", ytdlp.Reset,
 		p.Url,
 	)
 	gefflog.Info(fmt.Sprintf("retrieving metadata: caller=%s, url=%s", "getFormats", p.Url))
@@ -401,7 +411,7 @@ func (p *Process) SetMetadata() error {
 		"--no-warnings",
 	}
 	if strings.Contains(p.Url, "x.com") {
-		if !IsFileExist(YdpConfig.BasePath + "/data/yt-dlp/cookies.txt") {
+		if !ytdlp.IsFileExist(YdpConfig.BasePath + "/data/yt-dlp/cookies.txt") {
 			return errors.New("下载X视频,cookies.txt不存在")
 		}
 		baseParams = append(baseParams, "--cookies", YdpConfig.BasePath+"/data/yt-dlp/cookies.txt")
@@ -413,13 +423,13 @@ func (p *Process) SetMetadata() error {
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		gefflog.Err(fmt.Sprintf("failed to connect to stdout: id=%s, url=%s, err=%s", p.getShortId(), p.Url, err.Error()))
+		gefflog.Err(fmt.Sprintf("failed to connect to stdout: id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		return err
 	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		gefflog.Err(fmt.Sprintf("failed to connect to stderr: id=%s, url=%s, err=%s", p.getShortId(), p.Url, err.Error()))
+		gefflog.Err(fmt.Sprintf("failed to connect to stderr: id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		return err
 	}
 
@@ -429,7 +439,7 @@ func (p *Process) SetMetadata() error {
 	}
 
 	if err := cmd.Start(); err != nil {
-		gefflog.Err(fmt.Sprintf("failed to start cmd: id=%s, url=%s, err=%s", p.getShortId(), p.Url, err.Error()))
+		gefflog.Err(fmt.Sprintf("failed to start cmd: id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		return err
 	}
 
@@ -438,10 +448,10 @@ func (p *Process) SetMetadata() error {
 	go func() {
 		io.Copy(&bufferedStderr, stderr)
 	}()
-	gefflog.Info(fmt.Sprintf("retrieving metadata: id=%s, url=%s", p.getShortId(), p.Url))
+	gefflog.Info(fmt.Sprintf("retrieving metadata: id=%s, url=%s", p.GetShortId(), p.Url))
 
 	if err := json.NewDecoder(stdout).Decode(&info); err != nil {
-		gefflog.Err(fmt.Sprintf("failed to Decode json : id=%s, url=%s, err=%s", p.getShortId(), p.Url, err.Error()))
+		gefflog.Err(fmt.Sprintf("failed to Decode json : id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		gefflog.Err(bufferedStderr.String())
 		return errors.New(bufferedStderr.String())
 	}
@@ -450,7 +460,7 @@ func (p *Process) SetMetadata() error {
 	p.Progress.Status = StatusPending
 
 	if err := cmd.Wait(); err != nil {
-		gefflog.Err(fmt.Sprintf("failed to wait cmd: id=%s, url=%s, err=%s", p.getShortId(), p.Url, err.Error()))
+		gefflog.Err(fmt.Sprintf("failed to wait cmd: id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		return errors.New(bufferedStderr.String())
 	}
 
@@ -459,7 +469,7 @@ func (p *Process) SetMetadata() error {
 
 func (p *Process) SetThumbnail() {
 	ThumbnailPath := YdpConfig.BasePath + "/data/yt-dlp-download/Thumbnail"
-	if !IsDirExists(ThumbnailPath) {
+	if !ytdlp.IsDirExists(ThumbnailPath) {
 		err := os.MkdirAll(ThumbnailPath, os.ModePerm)
 		if err != nil {
 			gefflog.Err("mkdir Thumbnail dir err: " + err.Error())
@@ -480,7 +490,7 @@ func (p *Process) SetThumbnail() {
 		return
 	}
 }
-func (p *Process) getShortId() string { return strings.Split(p.Id, "-")[0] }
+func (p *Process) GetShortId() string { return strings.Split(p.Id, "-")[0] }
 
 func buildFilename(o *DownloadOutput) {
 	if o.Filename != "" && strings.Contains(o.Filename, ".%(ext)s") {

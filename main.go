@@ -26,7 +26,7 @@ func main() {
 
 	// Run the application. This blocks until the application has been exited.
 	bridge.InitScheduledTasks()
-	bridge.MqNotifyConsumer()
+	//bridge.MqNotifyConsumer()
 	bridge.CreateHook()
 	err := bridge.MainApp.Run()
 

@@ -9,13 +9,15 @@ import GeneralSetting from './components/GeneralSetting.vue'
 import TranslateSetting from './components/TranslateSetting.vue'
 import YtdlpSetting from "./components/YtdlpSetting.vue";
 import WsSetting from "@/views/SettingsView/components/WsSetting.vue";
+import MqttSetting from "@/views/SettingsView/components/MqttSetting.vue";
 
 
 const settings = [
   { key: 'general', tab: 'settings.general' },
   { key: 'translate', tab: 'settings.translate.translate' },
   { key: 'ytdlp', tab: 'YT-DLP' },
-  { key: 'websocket', tab: 'WebSocket' },
+  { key: 'mqtt', tab: 'MQTT' },
+  // { key: 'websocket', tab: 'WebSocket' },
   // { key: 'kernel', tab: 'router.kernel' }
 ]
 
@@ -40,11 +42,14 @@ useYtdlpSettingsStore().setupYtdlpSettings()
       <YtdlpSetting />
     </template>
 
-    <template #websocket>
-      <WsSetting />
+<!--    <template #websocket>-->
+<!--      <WsSetting />-->
+<!--    </template>-->
+    <template #mqtt>
+      <MqttSetting />
     </template>
 
-<!--    <template #kernel>-->
+    <!--    <template #kernel>-->
 <!--      <KernelView />-->
 <!--    </template>-->
 

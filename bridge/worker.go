@@ -1,4 +1,4 @@
-package ytdlp
+package bridge
 
 type Worker struct {
 	requests chan Process // downloads to do

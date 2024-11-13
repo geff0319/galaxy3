@@ -1,6 +1,8 @@
 package website
 
-import "github.com/ge-fei-fan/gefflog"
+import (
+	"github.com/ge-fei-fan/gefflog"
+)
 
 type Handler interface {
 	// Compile 过滤网页端视频地址

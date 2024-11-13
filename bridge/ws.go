@@ -5,20 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"galaxy3/bridge/website"
-	"galaxy3/bridge/ytdlp"
 	"github.com/coder/websocket"
 	"github.com/ge-fei-fan/gefflog"
 	"time"
 )
 
-type wsClent struct {
+type wsClient struct {
 	id     string
 	domain string
 	wsConn *websocket.Conn
 	close  chan struct{}
 }
 
-var WsC = wsClent{
+var WsC = wsClient{
 	wsConn: nil,
 }
 
@@ -117,15 +116,15 @@ func nextMessage() {
 		gefflog.Info(fmt.Sprintf("WS接收到消息: %v", rm))
 		url, ok := website.PreprocessApp(rm.Source, rm.Data)
 		if ok {
-			p := &ytdlp.Process{
+			p := &Process{
 				Url:    url,
 				Params: []string{},
-				Output: ytdlp.DownloadOutput{
-					Path: ytdlp.YdpConfig.DownloadPath,
+				Output: DownloadOutput{
+					Path: YdpConfig.DownloadPath,
 				},
 			}
-			ytdlp.YdpConfig.Mdb.Set(p)
-			ytdlp.YdpConfig.Mq.Publish(p)
+			YdpConfig.Mdb.Set(p)
+			YdpConfig.Mq.Publish(p)
 		}
 	}
 }

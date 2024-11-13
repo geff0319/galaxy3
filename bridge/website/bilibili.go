@@ -302,6 +302,7 @@ func (bmd *BiliMetadata) getDefaultVideoStreamUrl() {
 		}
 	}
 }
+
 func (bmd *BiliMetadata) Download(basePath string) error {
 	var err error
 	ctx, cancel := context.WithCancel(context.Background())

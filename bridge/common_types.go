@@ -1,4 +1,4 @@
-package ytdlp
+package bridge
 
 import (
 	"galaxy3/bridge/website"

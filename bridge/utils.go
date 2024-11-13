@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -125,4 +126,11 @@ func (a *App) GetBelowWinPos(winWidth, winHeight int) FlagResultWithData {
 func (a *App) ChangeLog(level byte, path string) {
 	gefflog.ChangeLogger(level, path)
 	gefflog.Info("修改应用日志：" + path)
+}
+func IsYtDlpExist() bool {
+	_, err := os.Stat(YdpConfig.YtDlpPath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return err == nil
 }

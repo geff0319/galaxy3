@@ -30,9 +30,9 @@ type FlagResult struct {
 }
 
 type FlagResultWithData struct {
-	Flag bool        `json:"flag"`
-	Msg  string      `json:"msg"`
-	Data interface{} `json:"data"`
+	Flag bool   `json:"flag"`
+	Msg  string `json:"msg"`
+	Data any    `json:"data"`
 }
 
 type HTTPResult struct {
