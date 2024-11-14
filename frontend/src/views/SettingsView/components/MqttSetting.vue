@@ -38,7 +38,7 @@ appMqttClient.connectionStatus()
         <div class="gray-line"></div>
         <div class="card-item">
           <div style="display:flex;align-items:center;">Port<Icon icon="must" /></div>
-          <a-input-number class="test" style="width: 30%" v-model:value="appMqttClient.mqttInfo.port" :min="1" :max="65535" :disabled="appMqttClient.isConnected"  />
+          <a-input-number style="width: 30%" v-model:value="appMqttClient.mqttInfo.port" :min="1" :max="65535" :disabled="appMqttClient.isConnected"  />
         </div>
       </a-card>
     </div>
@@ -118,6 +118,7 @@ appMqttClient.connectionStatus()
     .card{
       width: 100%;
       &-item{
+        height: 30px;
         margin: 0 5px;
         display: flex;
         justify-content: space-between;

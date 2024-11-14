@@ -15,6 +15,7 @@ import {
   SwitchPermissions
 } from '@/utils'
 import {FolderOpenOutlined} from "@ant-design/icons-vue";
+import TranslateSetting from "@/views/SettingsView/components/TranslateSetting.vue";
 
 const isAdmin = ref(false)
 const isTaskScheduled = ref(false)
@@ -207,30 +208,30 @@ if (envStore.env.os === 'windows') {
 <!--        <Input v-model="appSettings.app['font-family']" editable style="margin-left: 8px" />-->
 <!--      </div>-->
 <!--    </div>-->
-    <div class="settings-item">
-      <div class="title">{{ t('settings.appFolder.name') }}</div>
-      <Button @click="handleOpenFolder" type="primary">
-        <FolderOpenOutlined />
-        <span style="margin-left: 8px">{{ t('settings.appFolder.open') }}</span>
-      </Button>
-    </div>
-    <div class="settings-item">
-      <div class="title">日志</div>
-      <Button @click="handleOpenLogFolder" type="primary">
-        <FolderOpenOutlined />
-        <span style="margin-left: 8px">打开日志目录</span>
-      </Button>
-      <Button @click="handelSelectLogFolderDialog" type="primary">
-        <FolderOpenOutlined />
-        <span style="margin-left: 8px">设置目录路径</span>
-      </Button>
-    </div>
-    <div class="settings-item">
-      <div class="title">
-        {{ t('settings.exitOnClose') }}
-      </div>
-      <Switch v-model="appSettings.app.exitOnClose" />
-    </div>
+<!--    <div class="settings-item">-->
+<!--      <div class="title">{{ t('settings.appFolder.name') }}</div>-->
+<!--      <Button @click="handleOpenFolder" type="primary">-->
+<!--        <FolderOpenOutlined />-->
+<!--        <span style="margin-left: 8px">{{ t('settings.appFolder.open') }}</span>-->
+<!--      </Button>-->
+<!--    </div>-->
+<!--    <div class="settings-item">-->
+<!--      <div class="title">日志</div>-->
+<!--      <Button @click="handleOpenLogFolder" type="primary">-->
+<!--        <FolderOpenOutlined />-->
+<!--        <span style="margin-left: 8px">打开日志目录</span>-->
+<!--      </Button>-->
+<!--      <Button @click="handelSelectLogFolderDialog" type="primary">-->
+<!--        <FolderOpenOutlined />-->
+<!--        <span style="margin-left: 8px">设置目录路径</span>-->
+<!--      </Button>-->
+<!--    </div>-->
+<!--    <div class="settings-item">-->
+<!--      <div class="title">-->
+<!--        {{ t('settings.exitOnClose') }}-->
+<!--      </div>-->
+<!--      <Switch v-model="appSettings.app.exitOnClose" />-->
+<!--    </div>-->
 <!--    <div class="settings-item">-->
 <!--      <div class="title">-->
 <!--        {{ t('settings.closeKernelOnExit') }}-->
@@ -249,46 +250,82 @@ if (envStore.env.os === 'windows') {
 <!--      </div>-->
 <!--      <Switch v-model="appSettings.app.autoStartKernel" />-->
 <!--    </div>-->
-    <div v-if="envStore.env.os === 'windows'" class="settings-item">
-      <div class="title">
-        {{ t('settings.admin') }}
-        <span class="tips">({{ t('settings.needRestart') }})</span>
-      </div>
-      <Switch v-model="isAdmin" @change="onPermChange" />
-    </div>
-    <div v-if="envStore.env.os === 'windows'" class="settings-item">
-      <div class="title">
-        {{ t('settings.startup.name') }}
-        <span class="tips">({{ t('settings.needAdmin') }})</span>
-      </div>
-      <div style="display: flex; align-items: center">
-        <Switch v-model="isTaskScheduled" @change="onTaskSchChange" style="margin-right: 16px" />
-        <template v-if="isTaskScheduled">
-          <Radio v-model="appSettings.app.windowStartState" :options="windowStates" type="number" />
-          <span style="margin: 0 8px">{{ t('settings.startup.delay') }}</span>
-          <Input
-            v-model="appSettings.app.startupDelay"
-            @submit="onStartupDelayChange"
-            :min="0"
-            type="number"
-          />
-        </template>
-      </div>
-    </div>
+<!--    <div v-if="envStore.env.os === 'windows'" class="settings-item">-->
+<!--      <div class="title">-->
+<!--        {{ t('settings.admin') }}-->
+<!--        <span class="tips">({{ t('settings.needRestart') }})</span>-->
+<!--      </div>-->
+<!--      <Switch v-model="isAdmin" @change="onPermChange" />-->
+<!--    </div>-->
+<!--    <div v-if="envStore.env.os === 'windows'" class="settings-item">-->
+<!--      <div class="title">-->
+<!--        {{ t('settings.startup.name') }}-->
+<!--        <span class="tips">({{ t('settings.needAdmin') }})</span>-->
+<!--      </div>-->
+<!--      <div style="display: flex; align-items: center">-->
+<!--        <Switch v-model="isTaskScheduled" @change="onTaskSchChange" style="margin-right: 16px" />-->
+<!--        <template v-if="isTaskScheduled">-->
+<!--          <Radio v-model="appSettings.app.windowStartState" :options="windowStates" type="number" />-->
+<!--          <span style="margin: 0 8px">{{ t('settings.startup.delay') }}</span>-->
+<!--          <Input-->
+<!--            v-model="appSettings.app.startupDelay"-->
+<!--            @submit="onStartupDelayChange"-->
+<!--            :min="0"-->
+<!--            type="number"-->
+<!--          />-->
+<!--        </template>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <div class="settings-item">-->
+<!--      <div class="title">{{ t('settings.addToMenu') }}</div>-->
+<!--      <Switch v-model="appSettings.app.addPluginToMenu" />-->
+<!--    </div>-->
+<!--    <div class="settings-item">-->
+<!--      <div class="title">{{ t('settings.userAgent.name') }}</div>-->
+<!--      <div style="display: flex; align-items: center">-->
+<!--        <Button @click="resetUserAgent" v-tips="'settings.userAgent.reset'" type="text">-->
+<!--          <Icon icon="reset" />-->
+<!--        </Button>-->
+<!--        <Input v-model.lazy="appSettings.app.userAgent" editable style="margin-left: 8px" />-->
+<!--      </div>-->
+<!--    </div>-->
+  </div>
+  <div class="settings">
     <div class="settings-item">
-      <div class="title">{{ t('settings.addToMenu') }}</div>
-      <Switch v-model="appSettings.app.addPluginToMenu" />
-    </div>
-    <div class="settings-item">
-      <div class="title">{{ t('settings.userAgent.name') }}</div>
-      <div style="display: flex; align-items: center">
-        <Button @click="resetUserAgent" v-tips="'settings.userAgent.reset'" type="text">
-          <Icon icon="reset" />
-        </Button>
-        <Input v-model.lazy="appSettings.app.userAgent" editable style="margin-left: 8px" />
-      </div>
+      <div class="title">系统</div>
+      <a-card class="card" size="small">
+        <div class="card-item">
+          <div>{{ t('settings.appFolder.name') }}</div>
+          <button class="button" @click="handleOpenFolder">
+            <Icon icon="folder"/>
+          </button>
+        </div>
+        <div class="gray-line"></div>
+        <div class="card-item">
+          <div>{{ t('settings.exitOnClose') }}</div>
+          <a-switch size="large" v-model:checked="appSettings.app.exitOnClose" />
+        </div>
+        <div class="gray-line" v-if="envStore.env.os === 'windows'"></div>
+        <div class="card-item" v-if="envStore.env.os === 'windows'">
+          <div>{{ t('settings.admin') }}<span>({{ t('settings.needAdmin') }})</span></div>
+          <a-switch size="large" v-model:checked="isAdmin" @change="onPermChange" />
+        </div>
+        <div class="gray-line"></div>
+        <div class="card-item">
+          <div>日志</div>
+          <div style="display: flex">
+            <button class="button" @click="handelSelectLogFolderDialog">
+              <Icon icon="edit"/>
+            </button>
+            <button class="button" @click="handleOpenLogFolder">
+              <Icon icon="folder"/>
+            </button>
+          </div>
+        </div>
+      </a-card>
     </div>
   </div>
+  <translate-setting></translate-setting>
 </template>
 
 <style lang="less" scoped>
@@ -308,6 +345,38 @@ if (envStore.env.os === 'windows') {
         font-size: 12px;
       }
     }
+    .card{
+      width: 100%;
+      &-item{
+        height: 30px;
+        margin: 0 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "幼圆", "Yu Yuan", sans-serif;
+      }
+    }
+  }
+}
+.gray-line {
+  height: 1px; /* 设置线的高度 */
+  background-color: #cccccc; /* 设置灰色背景 */
+  margin: 10px 0; /* 添加上下间距 */
+}
+.button {
+  cursor:pointer;
+  border: 1px solid  #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 6px 12px;
+  margin-left: 20px;
+  display: flex;
+  align-content: center;
+  justify-items: center;
+  background-color: rgb(250, 250, 250);
+  &:hover{
+    background-color: rgb(220, 220, 220);
+    color: black; /* 按钮文本颜色 */
   }
 }
 </style>

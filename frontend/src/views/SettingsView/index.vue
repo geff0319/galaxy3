@@ -2,8 +2,7 @@
 import {ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 
-import {useAppStore, useYtdlpSettingsStore, useYtdlpStore} from '@/stores'
-
+import {useAppStore, useYtdlpSettingsStore} from '@/stores'
 import KernelView from '@/views/KernelView/index.vue'
 import GeneralSetting from './components/GeneralSetting.vue'
 import TranslateSetting from './components/TranslateSetting.vue'
@@ -14,9 +13,9 @@ import MqttSetting from "@/views/SettingsView/components/MqttSetting.vue";
 
 const settings = [
   { key: 'general', tab: 'settings.general' },
-  { key: 'translate', tab: 'settings.translate.translate' },
-  { key: 'ytdlp', tab: 'YT-DLP' },
-  { key: 'mqtt', tab: 'MQTT' },
+  // { key: 'translate',tab: 'settings.translate.translate' },
+  { key: 'ytdlp', tab: '视频' },
+  { key: 'mqtt', tab: '通信' },
   // { key: 'websocket', tab: 'WebSocket' },
   // { key: 'kernel', tab: 'router.kernel' }
 ]

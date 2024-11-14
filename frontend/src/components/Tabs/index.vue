@@ -34,7 +34,8 @@ const isActive = ({ key }: TabItemType) => key === props.activeKey
         @click="handleChange(tab.key)"
         :type="isActive(tab) ? 'link' : 'text'"
       >
-        {{ t(tab.tab) }}
+<!--        <span :style="{marginLeft: '8px',fontWeight: isActive(tab) ? 'bold' : 'normal'}">{{ t(tab.tab) }}</span>-->
+        <span :style="{fontWeight: isActive(tab) ? 'bold' : 'normal'}">{{ t(tab.tab) }}</span>
       </Button>
       <slot name="extra" />
     </div>

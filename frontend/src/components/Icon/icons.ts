@@ -56,7 +56,9 @@ const icons = [
     'question',
     'must',
     'success',
-    'failed'
+    'failed',
+    'qr',
+    'edit'
 ] as const
 
 export default icons
