@@ -238,46 +238,135 @@ initVersion()
 </script>
 
 <template>
-  <h3>YT-DLP</h3>
-  <div style="display: flex;align-items: center;">
-    <Tag @click="updateLocalVersion(true)" style="cursor: pointer">
-      {{ t('kernel.local') }}
-      :
-      {{ localVersionLoading ? 'Loading' : localVersion || t('kernel.notFound') }}
-    </Tag>
-    <Tag @click="updateRemoteVersion()" style="cursor: pointer">
-      {{ t('kernel.remote') }}
-      :
-      {{ remoteVersionLoading ? 'Loading' : remoteVersion }}
-    </Tag>
-    <Button
-        v-show="!localVersionLoading && !remoteVersionLoading && needUpdate"
-        @click="downloadCore"
-        :loading="downloadLoading"
-        size="small"
-        type="primary"
-    >
-      {{ t('kernel.update') }} : {{ remoteVersion }}
-    </Button>
-  </div>
-  <h3>FFmpeg(YT-DLP优化版)</h3>
-  <div style="display: flex;align-items: center;">
-    <Tag @click="updateFfLocalVersion(true)" style="cursor: pointer">
-      {{ t('kernel.local') }}
-      :
-      {{ localFfVersionLoading ? 'Loading' : localFfVersion || t('kernel.notFound') }}
-    </Tag>
-    <Button
-        v-show="!localFfVersionLoading"
-        @click="downloadFfCore"
-        :loading="downloadFfLoading"
-        size="small"
-        type="primary"
-    >
-      {{ t('kernel.update') }}
-    </Button>
+<!--  <h3>YT-DLP</h3>-->
+<!--  <div style="display: flex;align-items: center;">-->
+<!--    <Tag @click="updateLocalVersion(true)" style="cursor: pointer">-->
+<!--      {{ t('kernel.local') }}-->
+<!--      :-->
+<!--      {{ localVersionLoading ? 'Loading' : localVersion || t('kernel.notFound') }}-->
+<!--    </Tag>-->
+<!--    <Tag @click="updateRemoteVersion()" style="cursor: pointer">-->
+<!--      {{ t('kernel.remote') }}-->
+<!--      :-->
+<!--      {{ remoteVersionLoading ? 'Loading' : remoteVersion }}-->
+<!--    </Tag>-->
+<!--    <Button-->
+<!--        v-show="!localVersionLoading && !remoteVersionLoading && needUpdate"-->
+<!--        @click="downloadCore"-->
+<!--        :loading="downloadLoading"-->
+<!--        size="small"-->
+<!--        type="primary"-->
+<!--    >-->
+<!--      {{ t('kernel.update') }} : {{ remoteVersion }}-->
+<!--    </Button>-->
+<!--  </div>-->
+<!--  <h3>FFmpeg(YT-DLP优化版)</h3>-->
+<!--  <div style="display: flex;align-items: center;">-->
+<!--    <Tag @click="updateFfLocalVersion(true)" style="cursor: pointer">-->
+<!--      {{ t('kernel.local') }}-->
+<!--      :-->
+<!--      {{ localFfVersionLoading ? 'Loading' : localFfVersion || t('kernel.notFound') }}-->
+<!--    </Tag>-->
+<!--    <Button-->
+<!--        v-show="!localFfVersionLoading"-->
+<!--        @click="downloadFfCore"-->
+<!--        :loading="downloadFfLoading"-->
+<!--        size="small"-->
+<!--        type="primary"-->
+<!--    >-->
+<!--      {{ t('kernel.update') }}-->
+<!--    </Button>-->
+<!--  </div>-->
+
+
+
+  <div class="settings">
+    <div class="settings-item">
+      <div class="title">YT-DLP</div>
+      <a-card class="card" size="small">
+        <div class="card-item">
+          <div>版本管理</div>
+          <div style="display: flex">
+            <button class="button" @click="updateLocalVersion(true)">
+              {{ t('kernel.local') }} : {{ localVersionLoading ? 'Loading' : localVersion || t('kernel.notFound') }}
+            </button>
+            <a @click="downloadCore" v-if="!localVersionLoading && !remoteVersionLoading && needUpdate">
+              <a-badge :count="1" title="点击升级">
+                <button class="button" @click="updateRemoteVersion()">
+                  {{ t('kernel.remote') }} : {{ remoteVersionLoading ? 'Loading' : remoteVersion }}
+                </button>
+              </a-badge>
+            </a>
+            <button v-else class="button" @click="updateRemoteVersion()">
+              {{ t('kernel.remote') }} : {{ remoteVersionLoading ? 'Loading' : remoteVersion }}
+            </button>
+          </div>
+        </div>
+      </a-card>
+    </div>
+
+    <div class="settings-item">
+      <div class="title">FFMPEG(YT-DLP优化版)</div>
+      <a-card class="card" size="small">
+        <div class="card-item">
+          <div>版本管理</div>
+          <a @click="downloadFfCore" v-if="!localFfVersionLoading">
+            <a-badge :count="1" title="点击升级">
+              <button class="button" @click="updateFfLocalVersion(true)">
+                {{ t('kernel.local') }} : {{ localFfVersionLoading ? 'Loading' : localFfVersion || t('kernel.notFound') }}
+              </button>
+            </a-badge>
+          </a>
+          <button v-else class="button" @click="updateFfLocalVersion(true)">
+            {{ t('kernel.local') }} : {{ localFfVersionLoading ? 'Loading' : localFfVersion || t('kernel.notFound') }}
+          </button>
+        </div>
+      </a-card>
+    </div>
   </div>
 </template>
 
 <style lang="less" scoped>
+.settings {
+  &-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 8px 16px;
+    .title {
+      align-self: flex-start;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 8px 0 16px 0;
+      .tips {
+        font-weight: normal;
+        font-size: 12px;
+      }
+    }
+    .card{
+      width: 100%;
+      &-item{
+        margin: 0 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  }
+}
+.gray-line {
+  height: 1px; /* 设置线的高度 */
+  background-color: #cccccc; /* 设置灰色背景 */
+  margin: 10px 0; /* 添加上下间距 */
+}
+.button {
+  cursor:pointer;
+  border: 1px solid  #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  padding: 6px 20px;
+  margin-left: 20px;
+  background-color: rgb(250, 250, 250);
+  font-family: "幼圆", "Yu Yuan", sans-serif;
+}
 </style>

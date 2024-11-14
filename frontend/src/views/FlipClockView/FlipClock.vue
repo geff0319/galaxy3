@@ -3,7 +3,6 @@ import FlipItem from './FlipItem.vue'
 import {onMounted,onBeforeUnmount, ref} from "vue";
 
 document.body.setAttribute('theme-mode', 'widget')
-console.log('set widget')
 const timeArr = ref<any[]>([])
 const timer = ref(0)
 // 更换数组类型

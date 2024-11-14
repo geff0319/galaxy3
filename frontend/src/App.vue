@@ -59,7 +59,6 @@ Events.Once("appInit", function(event:any) {
   Events.On('beforeClose',  () => {
     exitApp()
   })
-  console.log('notify!!!!!')
   // 0：是否切换页面 1：等级 2：消息
   Events.On('notify',(event:any)=>{
     if(event.data[0]){
@@ -99,15 +98,17 @@ Events.Once("appInit", function(event:any) {
   //     }
   //   }
   // })
-  mqttClientStore.setupMqttSettings().then(()=>{
-      if(mqttClientStore.mqttInfo.autoConnect){
-        try {
-          mqttClientStore.connectMqtt()
-        }catch (error){
-          antmessage.error("mqtt连接失败：" + error)
-        }
-      }
-  })
+  // mqttClientStore.setupMqttSettings().then(()=>{
+  //     if(mqttClientStore.mqttInfo.autoConnect){
+  //       try {
+  //         console.log("mqtt连接vue")
+  //         mqttClientStore.connectMqtt()
+  //       }catch (error){
+  //         antmessage.error("mqtt连接失败：" + error)
+  //       }
+  //     }
+  // })
+  mqttClientStore.setupMqttSettings()
   loading.value = false
 })
 

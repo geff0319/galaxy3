@@ -221,6 +221,7 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
             }else {
               res = await appDownloadYoutube(downloadUrl.value,[])
             }
+            console.log("hhhhhhhhh")
             // await getAllVideoInfo()
             return res
         }catch (error:any){

@@ -44,6 +44,10 @@ func InitMianWin() {
 		DisableResize:   true,
 		Centered:        true,
 		Hidden:          true,
+		ShouldClose: func(window *application.WebviewWindow) bool {
+			//直接窗口不关闭，等处理完成app退出
+			return false
+		},
 		//ShouldClose: func(window *application.WebviewWindow) bool {
 		//	b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
 		//	if err != nil {
@@ -85,6 +89,7 @@ func InitMianWin() {
 		MainWin.EmitEvent("appInit")
 		time.Sleep(200 * time.Millisecond)
 		MainWin.Show()
+		InitWidgetsWin()
 	})
 
 	//YtdlpWinShow()

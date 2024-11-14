@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"galaxy3/bridge/website"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/ge-fei-fan/gefflog"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 )
 
 var YoutubePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	gefflog.Info(fmt.Sprintf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic()))
 	url, ok := website.NewYoutube(string(msg.Payload())).AppCompile()
 	if ok {
 		p := &Process{
@@ -23,13 +24,16 @@ var YoutubePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
 			},
+			BiliMeta: &website.BiliMetadata{
+				SelectedVideoQuality: "",
+			},
 		}
 		YdpConfig.Mdb.Set(p)
 		YdpConfig.Mq.Publish(p)
 	}
 }
 var BilibiliPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	gefflog.Info(fmt.Sprintf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic()))
 	url, ok := website.NewBlibili(string(msg.Payload())).AppCompile()
 	if ok {
 		p := &Process{
@@ -38,6 +42,9 @@ var BilibiliPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.M
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
 			},
+			BiliMeta: &website.BiliMetadata{
+				SelectedVideoQuality: "",
+			},
 		}
 		YdpConfig.Mdb.Set(p)
 		YdpConfig.Mq.Publish(p)
@@ -45,7 +52,7 @@ var BilibiliPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.M
 }
 
 var TwitterPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	gefflog.Info(fmt.Sprintf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic()))
 	url, ok := website.NewTwitter(string(msg.Payload())).AppCompile()
 	if ok {
 		p := &Process{
@@ -53,6 +60,9 @@ var TwitterPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			Params: []string{},
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
+			},
+			BiliMeta: &website.BiliMetadata{
+				SelectedVideoQuality: "",
 			},
 		}
 		YdpConfig.Mdb.Set(p)

@@ -92,16 +92,30 @@ func (p *Process) Start() {
 	p.Output.SavedFilePath = filepath.Join(p.Output.Path, ytdlp.SanitizeFileName(p.Info.FileName))
 	// bilibii下载
 	if strings.Contains(p.Url, "bilibili") {
-		if p.BiliMeta == nil {
-			err := p.SetMetadata()
-			if err != nil {
-				gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-				//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
-				MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
-				p.Progress.Status = StatusErrored
-				return
-			}
+		//if p.BiliMeta == nil || p.BiliMeta.Cr.Data.Bvid == "" {
+		//	err := p.SetMetadata()
+		//	if err != nil {
+		//		gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
+		//		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+		//		MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
+		//		p.Progress.Status = StatusErrored
+		//		return
+		//	}
+		//}
+		// 视频下载链接会过期，每次都重新获取，根据SelectedVideoQuality来查找历史的
+		tmpQuality := ""
+		if p.BiliMeta != nil && p.BiliMeta.SelectedVideoQuality != "" {
+			tmpQuality = p.BiliMeta.SelectedVideoQuality
 		}
+		err := p.SetMetadata()
+		if err != nil {
+			gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
+			//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
+			MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
+			p.Progress.Status = StatusErrored
+			return
+		}
+		p.BiliMeta.SelectedVideoQuality = tmpQuality
 		p.BiliMeta.SavedFilePath = p.Output.SavedFilePath
 		p.BiliMeta.WriteFn = func(percentage string, speed float32) {
 			if percentage == "100" {
@@ -120,7 +134,7 @@ func (p *Process) Start() {
 				}
 			}
 		}
-		err := p.BiliMeta.Download(YdpConfig.BasePath)
+		err = p.BiliMeta.Download(YdpConfig.BasePath)
 		if err != nil {
 			gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
 			//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
@@ -250,7 +264,7 @@ func (p *Process) Complete() {
 		Speed:      0,
 		ETA:        0,
 	}
-	if MqttC.Client.IsConnectionOpen() {
+	if MqttC.Client != nil && MqttC.Client.IsConnectionOpen() {
 		MqttC.Client.Publish(DOWNLOAD_RESULT_TOPIC, 0, false,
 			fmt.Sprintf("[%s]%s: 下载完成", MqttC.opt.ClientID, p.Info.FileName))
 	}

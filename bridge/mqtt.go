@@ -28,17 +28,19 @@ type MqttClient struct {
 }
 
 var MqttC = &MqttClient{}
+var info MqttInfo
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
+	gefflog.Info(fmt.Sprintf("Connected"))
+
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	gefflog.Info(fmt.Printf("mqtt Connect lost: %v", err))
+	gefflog.Info(fmt.Sprintf("mqtt Connect lost: %v", err))
 }
 
 func (mi *MqttInfo) initMqttOptions() {
@@ -62,7 +64,9 @@ func (mc *MqttClient) connect() error {
 	return nil
 }
 func (mc *MqttClient) disconnect() {
-	if mc.Client != nil {
+	if mc.Client != nil && mc.Client.IsConnected() {
+		//gefflog.Info(fmt.Sprintf("删除订阅：%v", mc.SuccessSubscribeList))
+		//mc.Client.Unsubscribe(mc.SuccessSubscribeList...)
 		mc.Client.Disconnect(3)
 	}
 }
@@ -93,17 +97,18 @@ func (mc *MqttClient) subscribe() {
 	for _, s := range mc.SubscribeList {
 		token := mc.Client.Subscribe(s.topic, s.qos, s.callback)
 		if token.WaitTimeout(10) && token.Error() != nil {
-			gefflog.Err(fmt.Printf("mqtt 订阅%s失败: %v", s.topic, token.Error()))
+			gefflog.Err(fmt.Sprintf("mqtt 订阅%s失败: %v", s.topic, token.Error()))
 		} else {
 			mc.SuccessSubscribeList = append(mc.SuccessSubscribeList, s.topic)
 		}
 	}
+	gefflog.Info(fmt.Sprintf("订阅成功：%v", mc.SuccessSubscribeList))
 }
 func (mc *MqttClient) getSubscribe() {
 	mc.Client.IsConnectionOpen()
 }
 func (a *App) ConnectMqtt(mqttInfo string) FlagResult {
-	var info MqttInfo
+
 	if err := json.Unmarshal([]byte(mqttInfo), &info); err != nil {
 		return FlagResult{false, "初始化mqtt信息失败!"}
 	}

@@ -21,7 +21,7 @@ var assets embed.FS
 func main() {
 	bridge.InitBridge(assets)
 	bridge.InitMianWin()
-	bridge.InitWidgetsWin()
+	//bridge.InitWidgetsWin()
 	bridge.InitSystray()
 
 	// Run the application. This blocks until the application has been exited.

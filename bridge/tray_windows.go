@@ -4,6 +4,7 @@ package bridge
 
 import (
 	"embed"
+	"fmt"
 	"github.com/energye/systray"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"log"
@@ -103,6 +104,8 @@ func createMenuItem(menu MenuItem, a *App, parent *systray.MenuItem) {
 }
 
 func (a *App) ExitApp() {
+	fmt.Println("go ExitApp")
+	MqttC.disconnect()
 	MainApp.Quit()
 }
 

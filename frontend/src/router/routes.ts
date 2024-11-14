@@ -15,7 +15,6 @@ import YtdlpView from '@/views/YtdlpView/index.vue'
 import WidgetsView from '@/views/WidgetsView.vue'
 import YtdlpWidgetView from '@/views/YtdlpView/YtdlpWidget.vue'
 import OptionView from '@/components/Option/index.vue'
-import SplashView from '@/views/SplashView.vue'
 
 
 const routes: RouteRecordRaw[] = [

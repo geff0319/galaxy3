@@ -122,6 +122,9 @@ func nextMessage() {
 				Output: DownloadOutput{
 					Path: YdpConfig.DownloadPath,
 				},
+				BiliMeta: &website.BiliMetadata{
+					SelectedVideoQuality: "",
+				},
 			}
 			YdpConfig.Mdb.Set(p)
 			YdpConfig.Mq.Publish(p)

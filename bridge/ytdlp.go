@@ -17,6 +17,9 @@ func (a *App) GetVideoMeta(url string) FlagResultWithData {
 		Output: DownloadOutput{
 			Path: YdpConfig.DownloadPath,
 		},
+		BiliMeta: &website.BiliMetadata{
+			SelectedVideoQuality: "",
+		},
 	}
 	p.SetPending()
 	if err := p.SetMetadata(); err != nil {
@@ -67,6 +70,9 @@ func (a *App) DownloadYoutube(url string, params []string) FlagResult {
 		Params: params,
 		Output: DownloadOutput{
 			Path: YdpConfig.DownloadPath,
+		},
+		BiliMeta: &website.BiliMetadata{
+			SelectedVideoQuality: "",
 		},
 	}
 	id := YdpConfig.Mdb.Set(p)

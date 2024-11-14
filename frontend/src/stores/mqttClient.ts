@@ -5,6 +5,7 @@ import {parse, stringify} from "yaml";
 import {debounce} from "@/utils";
 import {message} from "ant-design-vue";
 import {appConnectMqtt, appDisconnectMqtt, appStatusMqtt} from "@/bridge/mqtt";
+import {message as antmessage} from "ant-design-vue/es/components";
 
 
 export type MqttInfoType = {
@@ -70,6 +71,10 @@ export const useMqttClientStore = defineStore('mqttClient', () => {
         try {
             const b = await Readfile('data/mqtt.yaml')
             mqttInfo.value = Object.assign(mqttInfo.value, parse(b))
+            if(mqttInfo.value.autoConnect){
+                console.log("mqtt init connect")
+                await connectMqtt()
+            }
         } catch (error) {
             firstOpen = false
             console.log(error)

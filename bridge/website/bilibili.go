@@ -281,9 +281,31 @@ func CheckLogin(ck string) (bool, error) {
 }
 
 func (bmd *BiliMetadata) getDefaultVideoStreamUrl() {
-	if bmd.SelectedVideoStreamUrl != "" {
-		return
+	//根据清晰度下载视频，此时编码就随机吧
+	tmpId := -1
+	if bmd.SelectedVideoQuality != "" {
+		bmd.SelectedVideoStreamUrl = ""
+		for _, formats := range bmd.Vir.Data.SupportFormats {
+			if formats.NewDescription == bmd.SelectedVideoQuality {
+				tmpId = formats.Quality
+				break
+			}
+		}
+		// -1就是没找到清晰度，下去选默认清晰度
+		if tmpId != -1 {
+			for _, elem := range bmd.Vir.Data.Dash.Video {
+				if elem.Id == tmpId {
+					bmd.SelectedVideoStreamUrl = elem.BaseUrl
+					break
+				}
+			}
+		}
+		if bmd.SelectedVideoStreamUrl != "" {
+			return
+		}
 	}
+
+	//获取默认清晰度
 	id := bmd.Vir.Data.Dash.Video[0].Id
 	var dstUrl string
 	for _, elem := range bmd.Vir.Data.Dash.Video {
