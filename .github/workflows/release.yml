@@ -61,7 +61,7 @@ jobs:
           go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
           wails3 generate bindings -ts -i -d "frontend/src/bindings"
           cd frontend && pnpm install
-          # go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          #  go install github.com/wailsapp/wails/v2/cmd/wails@latest
           
 
       # Dependencies: GNU/Linux
