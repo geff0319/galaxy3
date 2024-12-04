@@ -48,32 +48,6 @@ func InitMianWin() {
 			//直接窗口不关闭，等处理完成app退出
 			return false
 		},
-		//ShouldClose: func(window *application.WebviewWindow) bool {
-		//	b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
-		//	if err != nil {
-		//		MainApp.Quit()
-		//		return true
-		//	}
-		//	err = yaml.Unmarshal(b, &Config)
-		//	if err != nil {
-		//		MainApp.Quit()
-		//		return true
-		//	}
-		//	if Config.ExitOnClose {
-		//		//WidgetsWin.Close()
-		//		MainApp.Quit()
-		//		return true
-		//	} else {
-		//		MainWin.Hide()
-		//		return false
-		//	}
-		//},
-		//KeyBindings: map[string]func(window *application.WebviewWindow){
-		//	"alt+w": func(window *application.WebviewWindow) {
-		//		YtdlpWinShow()
-		//	},
-		//},
-		//BackgroundType: application.BackgroundTypeTranslucent,
 		Windows: application.WindowsWindow{
 			//BackdropType: application.Acrylic,
 		},

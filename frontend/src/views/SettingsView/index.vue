@@ -9,13 +9,19 @@ import TranslateSetting from './components/TranslateSetting.vue'
 import YtdlpSetting from "./components/YtdlpSetting.vue";
 import WsSetting from "@/views/SettingsView/components/WsSetting.vue";
 import MqttSetting from "@/views/SettingsView/components/MqttSetting.vue";
+import icons from '@/components/Icon/icons'
 
 
-const settings = [
-  { key: 'general', tab: 'settings.general' },
-  // { key: 'translate',tab: 'settings.translate.translate' },
-  { key: 'ytdlp', tab: '视频' },
-  { key: 'mqtt', tab: '通信' },
+type TabItemType = {
+  icon:(typeof icons)[number]
+  key: string
+  tab: string
+}
+
+const settings:TabItemType[] = [
+  { icon:'setting',key: 'general', tab: 'settings.general' },
+  { icon:'video',key: 'ytdlp', tab: '视频配置' },
+  { icon:'mqtt',key: 'mqtt', tab: '通信配置' },
   // { key: 'websocket', tab: 'WebSocket' },
   // { key: 'kernel', tab: 'router.kernel' }
 ]
@@ -28,7 +34,7 @@ useYtdlpSettingsStore().setupYtdlpSettings()
 </script>
 
 <template>
-  <Tabs v-model:active-key="activeKey" :items="settings" height="100%">
+  <TabsWithIcon v-model:active-key="activeKey" :items="settings" height="100%">
     <template #general>
       <GeneralSetting />
     </template>
@@ -53,11 +59,46 @@ useYtdlpSettingsStore().setupYtdlpSettings()
 <!--    </template>-->
 
     <template #extra>
-      <Button @click="appStore.showAbout = true" type="text">
-        {{ t('router.about') }}
-      </Button>
+      <button class="custom-btn" @click="appStore.showAbout = true">
+        <icon icon="about"></icon>
+        <span :style="{marginLeft: '8px'}">{{ t('router.about') }}</span>
+      </button>
     </template>
-  </Tabs>
+  </TabsWithIcon>
 </template>
 
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.custom-btn {
+  width: 80%;
+  padding: 8px 12px;
+  margin: 3px 4px;
+  font-size: 14px;
+  border: 2px #ccc; /* 设置边框 */
+  cursor: pointer; /* 鼠标悬停时显示指针 */
+  transition: all 0.3s ease; /* 为所有变化添加过渡效果 */
+  color: var(--btn-text-color);
+  background-color: var(--btn-text-bg);
+  border: none;
+  display: flex;
+  justify-content: flex-start; /* 左对齐 */
+  align-items: center;
+  border-radius: 6px;
+  &:hover {
+    color: var(--btn-text-hover-color);
+    background-color: var(--btn-text-hover-bg);
+  }
+  &:active {
+    color: var(--btn-text-active-color);
+    background-color: var(--btn-text-active-bg);
+  }
+}
+button.active-tab {
+  font-weight: bold; /* 如果选中则加粗 */
+  color: var(--btn-text-active-color);
+  background-color: var(--btn-text-active-bg);
+}
+.custom-btn .span{
+  font-family: "幼圆", "Yu Yuan", sans-serif;
+}
+</style>
+

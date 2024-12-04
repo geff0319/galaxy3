@@ -2,7 +2,7 @@ import {defineStore} from "pinia";
 import {ref, watch} from "vue";
 import {
     appAll,
-    appDbPersist,
+    // appDbPersist,
     appDownloadYoutube,
     appDownloadYoutubeByKey,
     appGetVideoMeta, deleteProcess,
@@ -15,7 +15,8 @@ import {debounce} from "@/utils";
 
 
 export type ProcessType = {
-    id: string,
+    id:string,
+    pid:string
     url:string
     progress :{
         process_status:number
@@ -115,6 +116,7 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
     const process = ref<ProcessType[]>([])
     const resProcess = ref<ProcessType>({
         id: "",
+        pid:"",
         url:"",
         output: {filename: "", Path: "", savedFilePath: ""},
         params: [],
@@ -221,21 +223,20 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
             }else {
               res = await appDownloadYoutube(downloadUrl.value,[])
             }
-            console.log("hhhhhhhhh")
-            // await getAllVideoInfo()
+            await getAllVideoInfo()
             return res
         }catch (error:any){
             throw error
         }
     }
 
-    const dbPersist = async ()=>{
-        try {
-            await appDbPersist()
-        }catch (error:any){
-            throw error
-        }
-    }
+    // const dbPersist = async ()=>{
+    //     try {
+    //         await appDbPersist()
+    //     }catch (error:any){
+    //         throw error
+    //     }
+    // }
 
 
     return {
@@ -249,7 +250,7 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
         determineUrl,
         getVideoMeta,
         downloadYoutube,
-        dbPersist,
+        // dbPersist,
         getAllVideoInfo,
         formatSize,
         formatSpeedMiB,

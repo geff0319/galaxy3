@@ -198,11 +198,11 @@ const handelOpenDirDialog =()=>{
   }
   //background-color: #389e0d;
 }
-:deep .ant-input-number{
+:deep(.ant-input-number){
   border: 1px solid  #ccc;
   box-shadow: none;
 }
-:deep .ant-input {
+:deep(.ant-input) {
   border: 1px solid  #ccc;
   box-shadow: none;
 }

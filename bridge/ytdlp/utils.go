@@ -6,11 +6,24 @@ import (
 )
 
 func IsFileExist(path string) bool {
-	_, err := os.Stat(path)
-	if os.IsNotExist(err) {
+	// 使用 os.Stat 获取文件信息
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		//if os.IsNotExist(err) {
+		//	// 文件不存在
+		//	return false
+		//}
+		//// 其他错误
 		return false
 	}
-	return err == nil
+
+	// 检查文件是否是一个目录
+	if fileInfo.IsDir() {
+		return false
+	}
+
+	// 文件存在且不是目录
+	return true
 }
 
 func IsDirExists(path string) bool {

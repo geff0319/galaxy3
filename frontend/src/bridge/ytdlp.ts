@@ -1,5 +1,5 @@
 // import * as App from '@wails/go/bridge/App'
-import * as App from '@/bindings/galaxy3/bridge/app'
+import * as App from '@/bindings/github.com/geff0319/galaxy3/bridge/app'
 // import {bridge} from "@wails/go/models";
 import type {ProcessType} from "@/stores";
 
@@ -28,13 +28,13 @@ export const appDownloadYoutubeByKey = async (p:ProcessType,retry:boolean) => {
 }
 
 
-export const appDbPersist = async () => {
-    const { flag,data } = await App.Persist()
-    if (!flag) {
-        throw data
-    }
-    return data
-}
+// export const appDbPersist = async () => {
+//     const { flag,data } = await App.Persist()
+//     if (!flag) {
+//         throw data
+//     }
+//     return data
+// }
 
 export const appAll = async () => {
     const { flag,data } = await App.All()
@@ -50,7 +50,7 @@ export const UpdateYtDlpConfig = async () => {
     }
     return data
 }
-export const deleteProcess = async (id:string) => {
+export const deleteProcess = async (id:number) => {
     const { flag,data } = await App.Delete(id)
     if (!flag) {
         throw data

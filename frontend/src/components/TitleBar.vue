@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import { APP_TITLE, APP_VERSION, exitApp } from '@/utils'
+import { APP_TITLE, APP_VERSION } from '@/utils'
 import {type Menu, useAppSettingsStore, useKernelApiStore, useEnvStore} from '@/stores'
 import {
   WML,

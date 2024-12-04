@@ -3,10 +3,10 @@ import {ref} from 'vue'
 //
 import * as Stores from '@/stores'
 import {
-  Events,
+  Events, ExitApp,
   Window
 } from '@/bridge'
-import { exitApp, ignoredError, sleep } from '@/utils'
+import { ignoredError, sleep } from '@/utils'
 import { useMessage, usePicker, useConfirm, usePrompt, useAlert } from '@/hooks'
 
 import AboutView from '@/views/AboutView.vue'
@@ -57,7 +57,8 @@ Events.Once("appInit", function(event:any) {
     }
   })
   Events.On('beforeClose',  () => {
-    exitApp()
+    // exitApp()
+    ExitApp()
   })
   // 0：是否切换页面 1：等级 2：消息
   Events.On('notify',(event:any)=>{

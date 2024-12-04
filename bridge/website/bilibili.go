@@ -174,18 +174,19 @@ func getCid(bv string) ([]byte, error) {
 	return body, nil
 }
 
-func getStream(bv, ck string, cid int64) (*VideoInfoResponse, error) {
+func getStream(bv, ck string, cid int64) (VideoInfoResponse, error) {
+	var vif VideoInfoResponse
 	url := fmt.Sprintf("https://api.bilibili.com/x/player/wbi/playurl?fnver=0&fnval=3216&fourk=1&qn=127&bvid=%s&cid=%d", bv, cid)
 	fmt.Println(url)
 	var err error
 	url, err = sign(url)
 	if err != nil {
-		return nil, err
+		return vif, err
 	}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return vif, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0")
 	req.Header.Set("Referer", "https://www.bilibili.com/")
@@ -195,53 +196,51 @@ func getStream(bv, ck string, cid int64) (*VideoInfoResponse, error) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return vif, err
 	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return vif, err
 	}
-	var vif VideoInfoResponse
+
 	err = json.Unmarshal(body, &vif)
 	if err != nil {
-		return nil, err
+		return vif, err
 	}
 
-	return &vif, nil
+	return vif, nil
 }
 
-func GetBilibiliInfo(url, ck string) (*BiliMetadata, error) {
+func GetBilibiliInfo(url, ck string) (BiliMetadata, error) {
+	var md BiliMetadata
 	u, err := url2.Parse(url)
 	if err != nil {
-		return nil, err
+		return md, err
 	}
 	segments := strings.Split(u.Path, "/")
 	if len(segments) < 2 {
-		return nil, errors.New("获取bv失败")
+		return md, errors.New("获取bv失败")
 	}
 	bvid := segments[2]
 	var cr CidResponse
 	res, err := getCid(bvid)
 	if err != nil {
-		return nil, errors.New("getCid err: " + err.Error())
+		return md, errors.New("getCid err: " + err.Error())
 	}
 	err = json.Unmarshal(res, &cr)
 	if err != nil {
-		return nil, err
+		return md, err
 	}
 	infoResp, err := getStream(cr.Data.Bvid, ck, cr.Data.Cid)
 	if err != nil {
-		return nil, errors.New("getStream err: " + err.Error())
+		return md, errors.New("getStream err: " + err.Error())
 	}
+	md.Cr = cr
+	md.Vir = infoResp
 
-	md := BiliMetadata{
-		Cr:  cr,
-		Vir: *infoResp,
-	}
-
-	return &md, nil
+	return md, nil
 }
 
 func CheckLogin(ck string) (bool, error) {

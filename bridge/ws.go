@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"galaxy3/bridge/website"
 	"github.com/coder/websocket"
 	"github.com/ge-fei-fan/gefflog"
+	"github.com/geff0319/galaxy3/bridge/website"
 	"time"
 )
 
@@ -122,11 +122,11 @@ func nextMessage() {
 				Output: DownloadOutput{
 					Path: YdpConfig.DownloadPath,
 				},
-				BiliMeta: &website.BiliMetadata{
+				BiliMeta: website.BiliMetadata{
 					SelectedVideoQuality: "",
 				},
 			}
-			YdpConfig.Mdb.Set(p)
+			//YdpConfig.Mdb.Set(p)
 			YdpConfig.Mq.Publish(p)
 		}
 	}

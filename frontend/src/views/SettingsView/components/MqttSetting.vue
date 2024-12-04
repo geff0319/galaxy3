@@ -143,7 +143,7 @@ appMqttClient.connectionStatus()
   font-family: "幼圆", "Yu Yuan", sans-serif;
   outline: none; /* 去除默认聚焦边框 */
 }
-:deep .ant-input-number{
+:deep(.ant-input-number){
   border: 1px solid  #ccc;
   box-shadow: none;
 }

@@ -122,8 +122,8 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     addPluginToMenu: false,
     pluginSettings: {},
     translate: {
-      tencentTanslateSecretId: '请输入tencentTanslateSecretId',
-      tencentTanslateSecretKey: '请输入tencentTanslateSecretKey'
+      tencentTanslateSecretId: '',
+      tencentTanslateSecretKey: ''
     },
     logPath:''
   })

@@ -1,9 +1,10 @@
 // import * as App from '@wails/go/bridge/App'
-import * as App from '@/bindings/galaxy3/bridge/app'
+import * as App from '@/bindings/github.com/geff0319/galaxy3/bridge/app'
 import type { TrayContent } from '@/constant'
 
 // export * from '@wails/runtime/runtime'
 export * from "@wailsio/runtime"
+
 
 export const RestartApp = App.RestartApp
 

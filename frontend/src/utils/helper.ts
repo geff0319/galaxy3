@@ -225,21 +225,21 @@ export const handleChangeMode = async (mode: 'direct' | 'global' | 'rule') => {
   await Promise.all(promises)
 }
 
-export const exitApp = async () => {
-    const pluginsStore = usePluginsStore()
-    const ytdlpStore= useYtdlpStore()
-    ytdlpStore.dbPersist().then(async ()=>{
-      try {
-          await pluginsStore.onShutdownTrigger()
-      } catch (error: any) {
-          window.Plugins.message.error(error)
-      }
-      // await Application.Quit
-      // await Window.Close()
-      ExitApp()
-  })
-
-}
+// export const exitApp = async () => {
+//     const pluginsStore = usePluginsStore()
+//     const ytdlpStore= useYtdlpStore()
+//     ytdlpStore.dbPersist().then(async ()=>{
+//       try {
+//           await pluginsStore.onShutdownTrigger()
+//       } catch (error: any) {
+//           window.Plugins.message.error(error)
+//       }
+//       // await Application.Quit
+//       // await Window.Close()
+//       ExitApp()
+//   })
+//
+// }
 
 export const toggleFullScreen = async () => {
   // const isFull = await WindowIsFullscreen()

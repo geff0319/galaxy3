@@ -59,7 +59,11 @@ const icons = [
     'failed',
     'qr',
     'edit',
-    'home'
+    'home',
+    'setting',
+    'video',
+    'mqtt',
+    'about'
 ] as const
 
 export default icons

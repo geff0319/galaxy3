@@ -1,11 +1,10 @@
 package bridge
 
 import (
-	"galaxy3/bridge/website"
+	"encoding/json"
 	"github.com/ge-fei-fan/gefflog"
-	"gopkg.in/yaml.v3"
-	"os"
-	"path/filepath"
+	"github.com/geff0319/galaxy3/bridge/website"
+	"strings"
 	"time"
 )
 
@@ -74,13 +73,49 @@ type Format struct {
 // struct representing the response sent to the client
 // as JSON-RPC result field
 type ProcessResponse struct {
-	Id       string               `json:"id"`
+	Id       int64                `json:"id"`
+	Pid      string               `json:"pid"`
 	Url      string               `json:"url"`
 	Progress DownloadProgress     `json:"progress"`
 	Info     DownloadInfo         `json:"info"`
 	Output   DownloadOutput       `json:"output"`
 	Params   []string             `json:"params"`
 	BiliMeta website.BiliMetadata `json:"biliMeta"`
+}
+
+func (pr *ProcessResponse) Unmarshal(dst map[string]any) {
+	if value, ok := dst["id"]; ok {
+		pr.Id = value.(int64)
+	}
+	if value, ok := dst["pid"]; ok {
+		pr.Pid = value.(string)
+	}
+	if value, ok := dst["url"]; ok {
+		pr.Url = value.(string)
+	}
+	if value, ok := dst["progress"]; ok {
+		if err := json.Unmarshal([]byte(value.(string)), &pr.Progress); err != nil {
+			gefflog.Err("ProcessResponse Unmarshal progress err:" + err.Error())
+		}
+	}
+	if value, ok := dst["info"]; ok {
+		if err := json.Unmarshal([]byte(value.(string)), &pr.Info); err != nil {
+			gefflog.Err("ProcessResponse Unmarshal info err:" + err.Error())
+		}
+	}
+	if value, ok := dst["output"]; ok {
+		if err := json.Unmarshal([]byte(value.(string)), &pr.Output); err != nil {
+			gefflog.Err("ProcessResponse Unmarshal output err:" + err.Error())
+		}
+	}
+	if value, ok := dst["params"]; ok {
+		pr.Params = strings.Split(value.(string), ",")
+	}
+	if value, ok := dst["biliMeta"]; ok {
+		if err := json.Unmarshal([]byte(value.(string)), &pr.BiliMeta); err != nil {
+			gefflog.Err("ProcessResponse Unmarshal biliMeta err:" + err.Error())
+		}
+	}
 }
 
 // struct representing the current status of the memoryDB
@@ -120,41 +155,41 @@ type YtDlpCookie struct {
 }
 type YtDlpConfig struct {
 	BasePath     string
-	DownloadPath string        `yaml:"downloadPath"` //视频保存路径
-	YtDlpPath    string        `yaml:"ytDlpPath"`    //下载程序路径
-	QueueSize    int           `yaml:"queueSize"`
-	Mdb          *MemoryDB     `yaml:"-"`
-	Mq           *MessageQueue `yaml:"-"`
-	Cookies      YtDlpCookie   `yaml:"cookies"`
+	DownloadPath string `yaml:"downloadPath"` //视频保存路径
+	YtDlpPath    string `yaml:"ytDlpPath"`    //下载程序路径
+	QueueSize    int    `yaml:"queueSize"`
+	//Mdb          *MemoryDB     `yaml:"-"`
+	Mq      *MessageQueue `yaml:"-"`
+	Cookies YtDlpCookie   `yaml:"cookies"`
 }
 
 var YdpConfig YtDlpConfig
 
 func InitYtDlpConfig(basePath string) {
-	var mdb MemoryDB
+	//var mdb MemoryDB
 	YdpConfig = YtDlpConfig{
 		BasePath:     basePath,
 		DownloadPath: basePath + "/data/yt-dlp-download/",
 		YtDlpPath:    basePath + "/data/yt-dlp/yt-dlp.exe",
 		QueueSize:    8,
-		Mdb:          &mdb,
-		Cookies:      YtDlpCookie{},
+		//Mdb:          &mdb,
+		Cookies: YtDlpCookie{},
 	}
-	b, err := os.ReadFile(basePath + "/data/ytdlp.yaml")
-	if os.IsNotExist(err) {
-		os.MkdirAll(filepath.Dir(basePath+"/data/ytdlp.yaml"), os.ModePerm)
-		content, err := yaml.Marshal(YdpConfig)
-		if err != nil {
-			gefflog.Err("生成ytdlp.yaml配置失败")
-		}
-		if err = os.WriteFile(basePath+"/data/ytdlp.yaml", content, 0644); err != nil {
-			gefflog.Err("生成ytdlp.yaml配置失败")
-		}
-	} else {
-		if err := yaml.Unmarshal(b, &YdpConfig); err != nil {
-			gefflog.Err("获取ytdlp.yaml配置失败")
-		}
-	}
+	//b, err := os.ReadFile(basePath + "/data/ytdlp.yaml")
+	//if os.IsNotExist(err) {
+	//	os.MkdirAll(filepath.Dir(basePath+"/data/ytdlp.yaml"), os.ModePerm)
+	//	content, err := yaml.Marshal(YdpConfig)
+	//	if err != nil {
+	//		gefflog.Err("生成ytdlp.yaml配置失败")
+	//	}
+	//	if err = os.WriteFile(basePath+"/data/ytdlp.yaml", content, 0644); err != nil {
+	//		gefflog.Err("生成ytdlp.yaml配置失败")
+	//	}
+	//} else {
+	//	if err := yaml.Unmarshal(b, &YdpConfig); err != nil {
+	//		gefflog.Err("获取ytdlp.yaml配置失败")
+	//	}
+	//}
 
 	mq, err := NewMessageQueue()
 	if err != nil {
@@ -164,6 +199,6 @@ func InitYtDlpConfig(basePath string) {
 	YdpConfig.Mq = mq
 	YdpConfig.Mq.SetupConsumers()
 
-	go YdpConfig.Mdb.Restore(basePath, mq)
-
+	//go YdpConfig.Mdb.Restore(basePath, mq)
+	//YdpConfig.Mdb.Restore(basePath, mq)
 }

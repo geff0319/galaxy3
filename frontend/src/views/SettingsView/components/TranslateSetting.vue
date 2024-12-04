@@ -91,7 +91,11 @@ const changeShow = (key:string) => {
 .password{
   width: 40%;
 }
-:deep .ant-input-affix-wrapper:hover {
+:deep(.ant-input-affix-wrapper:hover) {
+  border: 1px solid  #ccc;
+  box-shadow: none;
+}
+:deep(.ant-input-affix-wrapper) {
   border: 1px solid  #ccc;
   box-shadow: none;
 }

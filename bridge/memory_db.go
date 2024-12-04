@@ -33,7 +33,7 @@ func (m *MemoryDB) Set(process *Process) string {
 	id := uuid.NewString()
 
 	m.table.Store(id, process)
-	process.Id = id
+	process.Pid = id
 
 	return id
 }
@@ -56,17 +56,17 @@ func (m *MemoryDB) Keys() *[]string {
 
 // Returns a slice of all currently stored processes progess
 func (m *MemoryDB) All() *[]ProcessResponse {
-	running := []ProcessResponse{}
+	var running []ProcessResponse
 
 	m.table.Range(func(key, value any) bool {
 		running = append(running, ProcessResponse{
-			Id:       key.(string),
+			Pid:      key.(string),
 			Url:      value.(*Process).Url,
 			Info:     value.(*Process).Info,
 			Progress: value.(*Process).Progress,
 			Output:   value.(*Process).Output,
 			Params:   value.(*Process).Params,
-			BiliMeta: *value.(*Process).BiliMeta,
+			BiliMeta: value.(*Process).BiliMeta,
 		})
 		return true
 	})
@@ -97,12 +97,11 @@ func (m *MemoryDB) Persist(basePath string) error {
 
 // Restore a persisted state
 func (m *MemoryDB) Restore(basePath string, mq *MessageQueue) {
-	fmt.Println("读取ytdlp下载内容")
+	gefflog.Info("读取ytdlp下载内容")
 	fd, err := os.Open(filepath.Join(basePath, "/data/session.dat"))
 	if err != nil {
 		return
 	}
-	fmt.Println(fd)
 	var session Session
 
 	if err = gob.NewDecoder(fd).Decode(&session); err != nil {
@@ -118,7 +117,7 @@ func (m *MemoryDB) Restore(basePath string, mq *MessageQueue) {
 			Progress: proc.Progress,
 			Output:   proc.Output,
 			Params:   proc.Params,
-			BiliMeta: &proc.BiliMeta,
+			BiliMeta: proc.BiliMeta,
 			//Logger:   logger,
 		}
 
@@ -133,14 +132,14 @@ func (m *MemoryDB) Restore(basePath string, mq *MessageQueue) {
 	}
 }
 
-func (m *MemoryDB) IsProcessExist(process *Process) bool {
-	isExist := false
-	YdpConfig.Mdb.table.Range(func(key, value any) bool {
-		if value.(*Process).Id == process.Id || value.(*Process).Info.Id != process.Info.Id {
-			return true
-		}
-		isExist = true
-		return false
-	})
-	return isExist
-}
+//func (m *MemoryDB) IsProcessExist(process *Process) bool {
+//	isExist := false
+//	YdpConfig.Mdb.table.Range(func(key, value any) bool {
+//		if value.(*Process).Id == process.Id || value.(*Process).Info.Id != process.Info.Id {
+//			return true
+//		}
+//		isExist = true
+//		return false
+//	})
+//	return isExist
+//}

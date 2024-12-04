@@ -44,7 +44,7 @@ onUnmounted(() => {
 const menuList: Menu[] = [
   {
     label: '删除',
-    handler: async (id: string) => {
+    handler: async (id: number) => {
       try {
         const data = await deleteProcess(id)
         await  ytdlpStore.getAllVideoInfo()
@@ -81,7 +81,7 @@ const reTry = async (p:ProcessType) => {
     message.error(error)
   }
 }
-const deleteVideo = async (id: string) => {
+const deleteVideo = async (id: number) => {
   try {
     const data = await deleteProcess(id)
     await  ytdlpStore.getAllVideoInfo()
@@ -171,8 +171,15 @@ const deleteVideo = async (id: string) => {
         <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
       </div>
       <div :class="'card-' + appSettingsStore.app.ytdlpView">
-        <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px">
+        <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px; display: flex;justify-content: center; align-items: center;">
           <img
+              v-if="p.info.thumbnail===''"
+              class="unselectable-image"
+              :src="'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAkBJREFUWEftlz2I1EAYht832RhPC8FOhUMED7TTQmVxf4a1EcHqGu3sxMZaBMFSsLDwEMRaLU7xuOuWnSEJrIKtFiIeiIUWgtrorptkZI7dRUNuN7dLksaBNJlv8jzzzZfJhCi5sWQ+GATB0mAweADALlimD+AhlVIbAC4UDB/jjMBLAGdKE5BSviJ5eijwDMCbnGUqAG6OGEwIXBJCPM1TQCm1G8CviQJBECyGYXhHay1I7gIgLcu60Wg03s8rl0lAKSUBiATstRDiVO4CAFaHKTJr9U9zXXdPtVodp28WmakZcF13rd/v/0x7uG3bB+v1+udZwKMxUwVMEUop35FcSoC+CCEOTIL7vn8yiqLzAFaEEN/TYjMJKKXOAVgHYCoWWuvflmUtN5tNcy+1KaWuaq3vkXS11m8dx6nVarVvyeBMAmaQUuowAHMhjuNPrVbrQxq52+0u9Hq9RyQv/92/nURmgSzr7Hne0TiO1wAcS4s3EiSbQoivO6qBLHAp5UUAj0nunRSvtTb1dHYkMXcGlFLm9bwL4HoW0WENjSXmEuh0OodIPie54w3JZCKO44Zt2z+mbsVpM5NSNgAY+P6sM0/Gaa03HccRYRh+HPVl+hhJKW+RvD0rOPF2bJI8kkmg3W7vq1QqZms2+0IubdsMeJ53IoqiFyQXcyEPH5oqIKW8RnIlT/B4CRJHsivD8+FyEXDDSGbAfGoXioJvCZR+KP0vUPqPie/7x6Mouq+1toosvq0CJJ+U/3Na9KyTvD+iO0J5c0BS3QAAAABJRU5ErkJggg=='"
+              alt=""
+          />
+          <img
+              v-else
               class="unselectable-image"
               height="100%"
               width="100%"
@@ -185,7 +192,7 @@ const deleteVideo = async (id: string) => {
             <div style="height: 40%; display: flex; align-items: center;">
               <div style="width: 600px;display: flex; ">
                 <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">
-                  {{ p.info.title }}
+                  {{ p.info.title||p.url }}
                 </div>
                 <a-tag color="#108ee9">{{ p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
               </div>
@@ -216,7 +223,7 @@ const deleteVideo = async (id: string) => {
                     <template #title>
                       <span class="custom-tooltip">删除记录</span>
                     </template>
-                    <DeleteOutlined class="icon-wrapper" @click="deleteVideo(p.id)"/>
+                    <DeleteOutlined class="icon-wrapper" @click="deleteVideo(Number(p.id))"/>
                   </a-tooltip>
                 </div>
               </div>

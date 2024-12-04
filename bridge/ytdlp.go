@@ -3,10 +3,11 @@ package bridge
 import (
 	"encoding/json"
 	"fmt"
-	"galaxy3/bridge/website"
 	"github.com/ge-fei-fan/gefflog"
+	"github.com/geff0319/galaxy3/bridge/website"
 	"gopkg.in/yaml.v3"
 	"os"
+	"strconv"
 )
 
 // 获取视频清晰度和名称
@@ -17,7 +18,7 @@ func (a *App) GetVideoMeta(url string) FlagResultWithData {
 		Output: DownloadOutput{
 			Path: YdpConfig.DownloadPath,
 		},
-		BiliMeta: &website.BiliMetadata{
+		BiliMeta: website.BiliMetadata{
 			SelectedVideoQuality: "",
 		},
 	}
@@ -30,7 +31,6 @@ func (a *App) GetVideoMeta(url string) FlagResultWithData {
 }
 
 func (a *App) DownloadYoutubeByKey(p string, retry bool) FlagResult {
-
 	var process Process
 	if err := json.Unmarshal([]byte(p), &process); err != nil {
 		return FlagResult{false, "下载视频失败,解析任务信息出错"}
@@ -39,27 +39,27 @@ func (a *App) DownloadYoutubeByKey(p string, retry bool) FlagResult {
 		if process.Info.Id == "" {
 			return FlagResult{false, "下载视频失败,任务信息为空"}
 		}
-		if YdpConfig.Mdb.IsProcessExist(&process) {
+		if process.IsExist() >= 1 {
 			return FlagResult{false, "下载视频失败,任务已存在"}
 		} else {
-			YdpConfig.Mdb.Set(&process)
+			//YdpConfig.Mdb.Set(&process)
+			err := process.Insert()
+			if err != nil {
+				return FlagResult{true, "下载视频失败:" + err.Error()}
+			}
 			YdpConfig.Mq.PublishByTopic("process:downloading", &process)
-			return FlagResult{true, process.Id}
+			return FlagResult{true, strconv.FormatInt(process.Id, 10)}
 		}
 	} else {
-		dstPrecess, err := YdpConfig.Mdb.Get(process.Id)
-		if err != nil {
-			return FlagResult{false, "任务id获取失败"}
-		}
-		if dstPrecess.Info.Id == "" {
-			gefflog.Info("重试解析: " + dstPrecess.Id)
-			YdpConfig.Mq.Publish(dstPrecess)
+		if process.Info.Id == "" {
+			gefflog.Info("重试解析: " + strconv.FormatInt(process.Id, 10))
+			YdpConfig.Mq.Publish(&process)
 		} else {
-			gefflog.Info("重试下载: " + dstPrecess.Id)
-			dstPrecess.SetPending()
-			YdpConfig.Mq.PublishByTopic("process:downloading", dstPrecess)
+			gefflog.Info("重试下载: " + strconv.FormatInt(process.Id, 10))
+			process.SetPending()
+			YdpConfig.Mq.PublishByTopic("process:downloading", &process)
 		}
-		return FlagResult{true, dstPrecess.Id}
+		return FlagResult{true, strconv.FormatInt(process.Id, 10)}
 	}
 
 }
@@ -71,31 +71,45 @@ func (a *App) DownloadYoutube(url string, params []string) FlagResult {
 		Output: DownloadOutput{
 			Path: YdpConfig.DownloadPath,
 		},
-		BiliMeta: &website.BiliMetadata{
+		BiliMeta: website.BiliMetadata{
 			SelectedVideoQuality: "",
 		},
 	}
-	id := YdpConfig.Mdb.Set(p)
+	//id := YdpConfig.Mdb.Set(p)
+	err := p.Insert()
+	if err != nil {
+		return FlagResult{Flag: false, Data: "添加失败:" + err.Error()}
+	}
 	YdpConfig.Mq.Publish(p)
-	return FlagResult{Flag: true, Data: id}
+	return FlagResult{Flag: true, Data: strconv.FormatInt(p.Id, 10)}
 }
 
 // 缓存的数据持久化到文件
-func (a *App) Persist() FlagResult {
-	err := YdpConfig.Mdb.Persist(Env.BasePath)
-	if err != nil {
-		gefflog.Err("视频信息保存失败：" + err.Error())
-		return FlagResult{Flag: false, Data: err.Error()}
-	}
-	return FlagResult{Flag: true, Data: "视频信息保存成功"}
-}
+//func (a *App) Persist() FlagResult {
+//	err := YdpConfig.Mdb.Persist(Env.BasePath)
+//	if err != nil {
+//		gefflog.Err("视频信息保存失败：" + err.Error())
+//		return FlagResult{Flag: false, Data: err.Error()}
+//	}
+//	return FlagResult{Flag: true, Data: "视频信息保存成功"}
+//}
 
 func (a *App) All() FlagResultWithData {
-	res := YdpConfig.Mdb.All()
+	//res := YdpConfig.Mdb.All()
+	res, err := SqliteS.Select(ProcessAll)
+	if err != nil {
+		gefflog.Err("SelectProcess err:" + err.Error())
+	}
+	var p Process
+	ps := []Process{}
+	for _, r := range res {
+		p.Unmarshal(r)
+		ps = append(ps, p)
+	}
 	return FlagResultWithData{
 		Flag: true,
 		Msg:  "操作成功",
-		Data: res,
+		Data: ps,
 	}
 }
 
@@ -112,26 +126,37 @@ func (a *App) UpdateYtDlpConfig() FlagResult {
 	return FlagResult{true, "更新配置成功"}
 }
 
-func (a *App) Delete(id string) FlagResult {
-	gefflog.Info("删除任务 id:" + id)
-	p, err := YdpConfig.Mdb.Get(id)
-	if err != nil {
-		gefflog.Err(fmt.Sprintf("删除任务失败 id: %s, err: %s", id, err.Error()))
-		return FlagResult{false, "删除任务失败:"}
-	}
-	if p == nil {
-		return FlagResult{false, "删除任务失败: nil process"}
+func (a *App) Delete(id int64) FlagResult {
+	var p Process
+
+	//gefflog.Info("删除任务 id:" + strconv.FormatInt(id, 10))
+	//p, err := YdpConfig.Mdb.Get(id)
+	//if err != nil {
+	//	gefflog.Err(fmt.Sprintf("删除任务失败 id: %s, err: %s", id, err.Error()))
+	//	return FlagResult{false, "删除任务失败:"}
+	//}
+	//if p == nil {
+	//	return FlagResult{false, "删除任务失败: nil process"}
+	//}
+
+	//p.Id, _ = strconv.ParseInt(id, 10, 64)
+	p.Id = id
+	p.FindById()
+	if p.Id == 0 {
+		gefflog.Err("删除任务失败,任务不存在")
+		return FlagResult{false, "删除任务失败,任务不存在"}
 	}
 	if p.Progress.Status == StatusPending || p.Progress.Status == StatusDownloading {
 		if err := p.Kill(); err != nil {
-			gefflog.Err(fmt.Sprintf("删除任务失败 id: %s, err: %s", id, err.Error()))
+			gefflog.Err(fmt.Sprintf("删除任务失败 id: %d, err: %s", p.Id, err.Error()))
 			return FlagResult{false, "删除任务失败"}
 		}
-		YdpConfig.Mdb.Delete(p.Id)
-	} else {
-		YdpConfig.Mdb.Delete(p.Id)
-	}
+		//YdpConfig.Mdb.Delete(p.Id)
 
+	} else {
+		//YdpConfig.Mdb.Delete(p.Id)
+	}
+	p.Delete()
 	return FlagResult{true, "删除成功"}
 }
 

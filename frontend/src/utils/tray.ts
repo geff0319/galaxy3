@@ -4,7 +4,7 @@ import { useAppSettingsStore, useKernelApiStore, useEnvStore, usePluginsStore } 
 import {Notify, RestartApp, Events, UpdateTray, ExitKey} from '@/bridge'
 import {
   debounce,
-  exitApp,
+  // exitApp,
   handleChangeMode,
   handleUseProxy,
   sampleID,
@@ -335,12 +335,12 @@ const getTrayMenus = () => {
       tooltip: 'tray.restartTip',
       event: RestartApp
     },
-    {
-      type: 'item',
-      text: 'tray.exit',
-      tooltip: 'tray.exitTip',
-      event: exitApp
-    },
+    // {
+    //   type: 'item',
+    //   text: 'tray.exit',
+    //   tooltip: 'tray.exitTip',
+    //   event: exitApp
+    // },
   ]
 
   return generateUniqueEventsForMenu(trayMenus)

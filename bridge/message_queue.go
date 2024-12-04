@@ -92,14 +92,13 @@ func (m *MessageQueue) metadataSubscriber() {
 		// 解析失败，设置为解析失败状态
 		if err := p.SetMetadata(); err != nil {
 			gefflog.Err(fmt.Sprintf("failed to retrieve metadata id=%s err=%s", p.GetShortId(), err.Error()))
-			p.Progress.Status = StatusErrored
-			YdpConfig.Mq.eventBus.Publish("notify", false, "error", "解析视频失败："+err.Error())
+			p.UpdateProgress(StatusErrored)
+			MainWin.EmitEvent("notify", false, "error", "解析视频失败："+err.Error())
 			return
 		}
-
-		if YdpConfig.Mdb.IsProcessExist(p) {
-			YdpConfig.Mdb.Delete(p.Id)
-			m.eventBus.Publish("notify", "error", "任务已存在")
+		if p.IsExist() > 1 {
+			p.Delete()
+			MainWin.EmitEvent("notify", false, "error", "任务已存在")
 		} else {
 			m.eventBus.Publish("process:downloading", p)
 		}

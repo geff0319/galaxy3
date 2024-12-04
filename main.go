@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 	_ "embed"
-	"galaxy3/bridge"
+	"github.com/geff0319/galaxy3/bridge"
 	"log"
 )
 

@@ -2,9 +2,9 @@ package bridge
 
 import (
 	"fmt"
-	"galaxy3/bridge/website"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/ge-fei-fan/gefflog"
+	"github.com/geff0319/galaxy3/bridge/website"
 )
 
 const (
@@ -24,12 +24,15 @@ var YoutubePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
 			},
-			BiliMeta: &website.BiliMetadata{
+			BiliMeta: website.BiliMetadata{
 				SelectedVideoQuality: "",
 			},
 		}
-		YdpConfig.Mdb.Set(p)
-		YdpConfig.Mq.Publish(p)
+		//YdpConfig.Mdb.Set(p)
+		err := p.Insert()
+		if err == nil {
+			YdpConfig.Mq.Publish(p)
+		}
 	}
 }
 var BilibiliPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
@@ -42,12 +45,15 @@ var BilibiliPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.M
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
 			},
-			BiliMeta: &website.BiliMetadata{
+			BiliMeta: website.BiliMetadata{
 				SelectedVideoQuality: "",
 			},
 		}
-		YdpConfig.Mdb.Set(p)
-		YdpConfig.Mq.Publish(p)
+		//YdpConfig.Mdb.Set(p)
+		err := p.Insert()
+		if err == nil {
+			YdpConfig.Mq.Publish(p)
+		}
 	}
 }
 
@@ -61,11 +67,14 @@ var TwitterPubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 			Output: DownloadOutput{
 				Path: YdpConfig.DownloadPath,
 			},
-			BiliMeta: &website.BiliMetadata{
+			BiliMeta: website.BiliMetadata{
 				SelectedVideoQuality: "",
 			},
 		}
-		YdpConfig.Mdb.Set(p)
-		YdpConfig.Mq.Publish(p)
+		//YdpConfig.Mdb.Set(p)
+		err := p.Insert()
+		if err == nil {
+			YdpConfig.Mq.Publish(p)
+		}
 	}
 }

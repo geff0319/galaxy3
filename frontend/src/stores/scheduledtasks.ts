@@ -14,7 +14,7 @@ import {
   RemoveScheduledTask,
   Events
 } from '@/bridge'
-import {appDbPersist} from "@/bridge/ytdlp";
+// import {appDbPersist} from "@/bridge/ytdlp";
 
 export type ScheduledTaskType = {
   id: string
@@ -36,46 +36,8 @@ export const useScheduledTasksStore = defineStore('scheduledtasks', () => {
   const ScheduledTasksIDs: number[] = []
 
   const setupScheduledTasks = async () => {
-    const stat = await FileExists(ScheduledTasksFilePath)
-    if (!stat){
-      let ytdlptasks = {
-        id: "ID_YTDLP",
-        name: "ytdlp定时保存",
-        type: ScheduledTasksType.RunScript,
-        subscriptions: [],
-        rulesets: [],
-        plugins: [],
-        script: '',
-        cron: '0 */5 * * * *',
-        notification: false,
-        disabled: false,
-        lastTime: ''
-      }
-      console.log("添加ytdlp的定时保存任务")
-      await addScheduledTask(ytdlptasks)
-      return
-    }
     const data = await Readfile(ScheduledTasksFilePath)
     scheduledtasks.value = parse(data)
-    // 添加ytdlp的定时保存任务
-    const exists = scheduledtasks.value.some(task => task.id === "ID_YTDLP");
-    if(!exists){
-      let ytdlptasks = {
-        id: "ID_YTDLP",
-        name: "ytdlp定时保存",
-        type: ScheduledTasksType.RunScript,
-        subscriptions: [],
-        rulesets: [],
-        plugins: [],
-        script: '',
-        cron: '0 */5 * * * *',
-        notification: false,
-        disabled: false,
-        lastTime: ''
-      }
-      console.log("添加ytdlp的定时保存任务")
-      await addScheduledTask(ytdlptasks)
-    }
   }
 
   const initScheduledTasks = async () => {
@@ -89,47 +51,25 @@ export const useScheduledTasksStore = defineStore('scheduledtasks', () => {
       const taskID = await AddScheduledTask(cron, id)
       ScheduledTasksEvents.push(id)
       ScheduledTasksIDs.push(taskID)
-      if(id === "ID_YTDLP"){
-        Events.On(id, async () => {
-          const task = getScheduledTaskById(id)
-          if (!task) return
+      Events.On(id, async () => {
+        const task = getScheduledTaskById(id)
+        if (!task) return
 
-          task.lastTime = new Date().toLocaleString()
-          editScheduledTask(id, task)
-          const startTime = Date.now()
-          const result= await appDbPersist()
-          const resultArray = [result]
+        task.lastTime = new Date().toLocaleString()
+        editScheduledTask(id, task)
 
-          task.notification && Notify(task.name, result)
+        const startTime = Date.now()
+        const result = await getTaskFn(task)()
 
-          logsStore.recordScheduledTasksLog({
-            name: task.name,
-            startTime,
-            endTime: Date.now(),
-            result:resultArray
-          })
+        task.notification && Notify(task.name, result.join('\n'))
+
+        logsStore.recordScheduledTasksLog({
+          name: task.name,
+          startTime,
+          endTime: Date.now(),
+          result
         })
-      }else {
-        Events.On(id, async () => {
-          const task = getScheduledTaskById(id)
-          if (!task) return
-
-          task.lastTime = new Date().toLocaleString()
-          editScheduledTask(id, task)
-
-          const startTime = Date.now()
-          const result = await getTaskFn(task)()
-
-          task.notification && Notify(task.name, result.join('\n'))
-
-          logsStore.recordScheduledTasksLog({
-            name: task.name,
-            startTime,
-            endTime: Date.now(),
-            result
-          })
-        })
-      }
+      })
 
     }
   }
@@ -243,8 +183,8 @@ export const useScheduledTasksStore = defineStore('scheduledtasks', () => {
 
   return {
     scheduledtasks,
-    setupScheduledTasks,
     saveScheduledTasks,
+    setupScheduledTasks,
     addScheduledTask,
     editScheduledTask,
     deleteScheduledTask,

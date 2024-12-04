@@ -1,6 +1,6 @@
 import { sampleID, getUserAgent } from '@/utils'
 // import * as App from '@wails/go/bridge/App'
-import * as App from '@/bindings/galaxy3/bridge/app'
+import * as App from '@/bindings/github.com/geff0319/galaxy3/bridge/app'
 import { GetSystemProxy } from '@/utils/helper'
 // import { EventsOn, EventsOff } from '@wails/runtime/runtime'
 import * as wails from "@wailsio/runtime"

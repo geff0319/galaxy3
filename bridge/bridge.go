@@ -76,6 +76,7 @@ func InitBridge(assets fs.FS) {
 		Icon:        Icon,
 		Services: []application.Service{
 			application.NewService(NewApp()),
+			application.NewService(SqliteNew(Env.BasePath + "/data/app.db")),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
