@@ -58,9 +58,11 @@ jobs:
       - run: node -v
       - name: Install dependencies
         run: |
+          go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+          wails3 generate bindings -ts -i -d "frontend/src/bindings"
           cd frontend && pnpm install
           # go install github.com/wailsapp/wails/v2/cmd/wails@latest
-          go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+          
 
       # Dependencies: GNU/Linux
       - name: Update system and dependencies
@@ -80,7 +82,6 @@ jobs:
         # run: ~/go/bin/wails build -m -s -trimpath -skipbindings -devtools -tags webkit2_41 -o ${{ env.APP_NAME }}.exe
         #run: go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
         run: |
-          wails3 generate bindings -ts -i -d "frontend/src/bindings"
           go build -tags production -trimpath -ldflags="-w -s -H windowsgui" -o bin/${{ env.APP_NAME }}.exe
 
       # Compress: macOS
