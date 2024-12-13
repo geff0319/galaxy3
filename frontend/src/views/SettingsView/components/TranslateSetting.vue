@@ -65,6 +65,7 @@ const changeShow = (key:string) => {
       font-size: 18px;
       font-weight: bold;
       padding: 8px 0 16px 0;
+      margin-bottom: 10px;
       .tips {
         font-weight: normal;
         font-size: 12px;
@@ -72,6 +73,8 @@ const changeShow = (key:string) => {
     }
     .card{
       width: 100%;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(-10px); /* 让元素上移 */
       &-item{
         height: 30px;
         margin: 0 5px;

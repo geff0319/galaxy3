@@ -6,10 +6,11 @@ import {type Menu, useAppSettingsStore, useKernelApiStore, useEnvStore} from '@/
 import {
   WML,
   Window,
-  Events
+  Events, deleteProcess
 } from '@/bridge'
 import * as Stores from "@/stores";
 import {useRouter} from "vue-router";
+import {Execute, Select} from "@/bindings/github.com/geff0319/galaxy3/bridge/sqliteservice";
 
 // const emits = defineEmits(['changeWin'])
 console.log('titleBar')
@@ -36,7 +37,6 @@ const enableWidgets = async() => {
 }
 
 
-
 const closeWindow = async () => {
   if (appSettingsStore.app.exitOnClose) {
     // await Window.Get("WidgetsWin").Close()
@@ -51,6 +51,12 @@ const menus: Menu[] = [
   {
     label: 'titlebar.reload',
     handler: Window.Reload
+  },
+  {
+    label: 'hh',
+    handler: async () => {
+      const res = await deleteProcess(1)
+    }
   }
 ]
 </script>

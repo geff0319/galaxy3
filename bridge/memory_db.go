@@ -9,8 +9,6 @@ import (
 	"path/filepath"
 	"sort"
 	"sync"
-
-	"github.com/google/uuid"
 )
 
 // In-Memory Thread-Safe Key-Value Storage with optional persistence
@@ -30,12 +28,13 @@ func (m *MemoryDB) Get(id string) (*Process, error) {
 
 // Store a pointer of a process and return its id
 func (m *MemoryDB) Set(process *Process) string {
-	id := uuid.NewString()
+	//id := uuid.NewString()
+	//
+	//m.table.Store(id, process)
+	//process.Pid = id
+	m.table.Store(process.Pid, process)
 
-	m.table.Store(id, process)
-	process.Pid = id
-
-	return id
+	return process.Pid
 }
 
 // Removes a process progress, given the process id

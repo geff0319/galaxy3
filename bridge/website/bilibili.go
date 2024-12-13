@@ -78,6 +78,7 @@ type BiliMetadata struct {
 	SavedFilePath          string
 	SelectedVideoStreamUrl string
 	SelectedVideoQuality   string
+	SelectedVideoCodecs    string
 	Cr                     CidResponse
 	Vir                    VideoInfoResponse
 	WriteFn                func(string, float32) `json:"-"`
@@ -87,6 +88,7 @@ type BiliMetaMemory struct {
 	SavedFilePath          string
 	SelectedVideoStreamUrl string
 	SelectedVideoQuality   string
+	SelectedVideoCodecs    string
 	Cr                     CidResponse
 	Vir                    VideoInfoResponse
 }
@@ -279,7 +281,7 @@ func CheckLogin(ck string) (bool, error) {
 	return win.Data.IsLogin, nil
 }
 
-func (bmd *BiliMetadata) getDefaultVideoStreamUrl() {
+func (bmd *BiliMetadata) GetDefaultVideoStreamUrl() {
 	//根据清晰度下载视频，此时编码就随机吧
 	tmpId := -1
 	if bmd.SelectedVideoQuality != "" {
@@ -292,12 +294,22 @@ func (bmd *BiliMetadata) getDefaultVideoStreamUrl() {
 		}
 		// -1就是没找到清晰度，下去选默认清晰度
 		if tmpId != -1 {
-			for _, elem := range bmd.Vir.Data.Dash.Video {
-				if elem.Id == tmpId {
-					bmd.SelectedVideoStreamUrl = elem.BaseUrl
-					break
+			if bmd.SelectedVideoCodecs != "" {
+				for _, elem := range bmd.Vir.Data.Dash.Video {
+					if elem.Id == tmpId && elem.Codecs == bmd.SelectedVideoCodecs {
+						bmd.SelectedVideoStreamUrl = elem.BaseUrl
+						break
+					}
+				}
+			} else { //无编码就随机编码吧
+				for _, elem := range bmd.Vir.Data.Dash.Video {
+					if elem.Id == tmpId {
+						bmd.SelectedVideoStreamUrl = elem.BaseUrl
+						break
+					}
 				}
 			}
+
 		}
 		if bmd.SelectedVideoStreamUrl != "" {
 			return
@@ -372,7 +384,7 @@ func (bmd *BiliMetadata) speed() {
 }
 
 func (bmd *BiliMetadata) DV() error {
-	bmd.getDefaultVideoStreamUrl()
+	//bmd.GetDefaultVideoStreamUrl()
 	req, err := http.NewRequestWithContext(bmd.ctx, http.MethodGet, bmd.SelectedVideoStreamUrl, nil)
 	if err != nil {
 		return err

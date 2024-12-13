@@ -51,7 +51,7 @@ type Process struct {
 	Output   DownloadOutput   `json:"output"`
 	proc     *os.Process
 	BiliMeta website.BiliMetadata `json:"biliMeta"`
-	mux      sync.RWMutex
+	//mux      sync.RWMutex
 	//Logger   *slog.Logger
 }
 
@@ -61,6 +61,7 @@ type Process struct {
 // This approach is anyhow not perfect: quotes are not escaped properly.
 // Each process is not identified by its PID but by a UUIDv4
 func (p *Process) Start() {
+	YdpConfig.Mdb.Set(p)
 	// escape bash variable escaping and command piping, you'll never know
 	// what they might come with...
 	p.Params = slices.DeleteFunc(p.Params, func(e string) bool {
@@ -87,40 +88,24 @@ func (p *Process) Start() {
 	//
 	//buildFilename(&p.Output)
 
-	// 下载Thumbnail
-	//go p.SetThumbnail()
 	//TODO: it spawn another one ytdlp process, too slow.
 	//go p.GetFileName(&out)
 	//p.Output.SavedFilePath = filepath.Join(YdpConfig.DownloadPath, sanitizeFileName(p.Info.FileName))
 	p.Output.SavedFilePath = filepath.Join(p.Output.Path, ytdlp.SanitizeFileName(p.Info.FileName))
 	// bilibii下载
 	if strings.Contains(p.Url, "bilibili") {
-		//if p.BiliMeta == nil || p.BiliMeta.Cr.Data.Bvid == "" {
-		//	err := p.SetMetadata()
-		//	if err != nil {
-		//		gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-		//		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
-		//		MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
-		//		p.Progress.Status = StatusErrored
-		//		return
-		//	}
-		//}
 		// 视频下载链接会过期，每次都重新获取，根据SelectedVideoQuality来查找历史的
-		tmpQuality := ""
-		if p.BiliMeta.SelectedVideoQuality != "" {
-			tmpQuality = p.BiliMeta.SelectedVideoQuality
-		}
+		//tmpQuality := ""
+		//if p.BiliMeta.SelectedVideoQuality != "" {
+		//	tmpQuality = p.BiliMeta.SelectedVideoQuality
+		//}
 		err := p.SetMetadata()
 		if err != nil {
 			gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-			//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
 			MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
-			//p.Progress.Status = StatusErrored
 			p.UpdateProgress(StatusErrored)
 			return
 		}
-		p.BiliMeta.SelectedVideoQuality = tmpQuality
-		p.BiliMeta.SavedFilePath = p.Output.SavedFilePath
 		p.BiliMeta.WriteFn = func(percentage string, speed float32) {
 			if percentage == "100" {
 				p.Progress = DownloadProgress{
@@ -137,14 +122,13 @@ func (p *Process) Start() {
 					ETA:        0,
 				}
 			}
-			p.UpdateProgress()
+			//p.UpdateProgress()
 		}
+		p.UpdateProgress(StatusDownloading)
 		err = p.BiliMeta.Download(YdpConfig.BasePath)
 		if err != nil {
 			gefflog.Err(fmt.Sprintf("failed to Download bilibili process: err=%s", err.Error()))
-			//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "下载bilibili视频失败"+err.Error())
 			MainWin.EmitEvent("notify", false, "error", "下载bilibili视频失败"+err.Error())
-			//p.Progress.Status = StatusErrored
 			p.UpdateProgress(StatusErrored)
 			p.BiliMeta.DoneChan <- struct{}{}
 			close(p.BiliMeta.DoneChan)
@@ -183,9 +167,7 @@ func (p *Process) Start() {
 	// ----------------- main block ----------------- //
 	if !IsYtDlpExist() {
 		gefflog.Err("failed to start ytdlp process: err=ytdlp程序不存在")
-		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败:ytdlp程序不存在,请下载")
 		MainWin.EmitEvent("notify", false, "error", "启动任务失败:ytdlp程序不存在,请下载")
-		//p.Progress.Status = StatusErrored
 		p.UpdateProgress(StatusErrored)
 		return
 	}
@@ -195,24 +177,21 @@ func (p *Process) Start() {
 	r, err := cmd.StdoutPipe()
 	if err != nil {
 		gefflog.Err(fmt.Sprintf("failed to connect to stdout: err=%s", err.Error()))
-		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
 		MainWin.EmitEvent("notify", false, "error", "启动任务失败")
-		//p.Progress.Status = StatusErrored
 		p.UpdateProgress(StatusErrored)
 		return
 	}
 
 	if err := cmd.Start(); err != nil {
 		gefflog.Err(fmt.Sprintf("failed to start ytdlp process: err=%s", err.Error()))
-		//ytdlp.YdpConfig.Mq.eventBus.Publish("notify", "error", "启动任务失败")
 		MainWin.EmitEvent("notify", false, "error", "启动任务失败")
-		//p.Progress.Status = StatusErrored
 		p.UpdateProgress(StatusErrored)
 		return
 	}
 
 	p.proc = cmd.Process
-
+	p.UpdateProgress(StatusDownloading)
+	gefflog.Info(fmt.Sprintf("%s开始启动 pid：%d", p.Info.FileName, p.proc.Pid))
 	// --------------- progress block --------------- //
 	var (
 		sourceChan = make(chan []byte)
@@ -247,16 +226,13 @@ func (p *Process) Start() {
 			if err := json.Unmarshal(event, &progress); err != nil {
 				return
 			}
-
 			p.Progress = DownloadProgress{
 				Status:     StatusDownloading,
 				Percentage: progress.Percentage,
 				Speed:      progress.Speed,
 				ETA:        progress.Eta,
 			}
-			p.UpdateProgress()
-			//gefflog.Info(fmt.Sprintf("progress: id=%s, url=%s, percentage=%s", p.GetShortId(), p.Url, progress.Percentage))
-
+			//p.UpdateProgress()
 		})
 	}()
 
@@ -280,14 +256,13 @@ func (p *Process) Complete() {
 			fmt.Sprintf("[%s]%s: 下载完成", MqttC.opt.ClientID, p.Info.FileName))
 	}
 	gefflog.Info(fmt.Sprintf("finished: id=%s, url=%s", p.GetShortId(), p.Url))
-
+	YdpConfig.Mdb.Delete(p.Pid)
 }
 
 // Kill a process and remove it from the memory
 func (p *Process) Kill() error {
 
 	defer func() {
-		//p.Progress.Status = StatusCompleted
 		p.UpdateProgress(StatusCompleted)
 	}()
 	if strings.Contains(p.Url, "bilibili") {
@@ -389,11 +364,11 @@ func (p *Process) SetPending() {
 		Title:     p.Url,
 		CreatedAt: time.Now(),
 	}
-	//p.Progress.Status = StatusPending
 	p.UpdateProgress(StatusPending)
 }
 
 func (p *Process) SetMetadata() error {
+	var result []string
 	if strings.Contains(p.Url, "bilibili") {
 		metadata, err := website.GetBilibiliInfo(p.Url, YdpConfig.Cookies.Bilibili)
 		if err != nil {
@@ -416,8 +391,13 @@ func (p *Process) SetMetadata() error {
 		p.Info = info
 		p.SetThumbnail()
 		p.Pid = info.Id
+		// 查询清晰度
+		metadata.SelectedVideoQuality = p.BiliMeta.SelectedVideoQuality
+		metadata.SelectedVideoCodecs = p.BiliMeta.SelectedVideoCodecs
+		metadata.GetDefaultVideoStreamUrl()
 		p.BiliMeta = metadata
 		p.Progress.Status = StatusPending
+		p.BiliMeta.SavedFilePath = p.Output.SavedFilePath
 		p.Update()
 		return nil
 	}
@@ -437,7 +417,12 @@ func (p *Process) SetMetadata() error {
 		}
 		baseParams = append(baseParams, "--cookies", YdpConfig.BasePath+"/data/yt-dlp/cookies.txt")
 	}
-	params := append(baseParams, p.Params...)
+	for _, str := range p.Params {
+		if strings.TrimSpace(str) != "" {
+			result = append(result, str)
+		}
+	}
+	params := append(baseParams, result...)
 	gefflog.Info(fmt.Sprintf("执行参数%s", params))
 	cmd := exec.Command(YdpConfig.YtDlpPath, params...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -476,15 +461,15 @@ func (p *Process) SetMetadata() error {
 		gefflog.Err(bufferedStderr.String())
 		return errors.New(bufferedStderr.String())
 	}
-	gefflog.Info(info)
-	p.Info = info
-	p.SetThumbnail()
-	//p.Progress.Status = StatusPending
-	p.UpdateProgress(StatusPending)
+
 	if err := cmd.Wait(); err != nil {
 		gefflog.Err(fmt.Sprintf("failed to wait cmd: id=%s, url=%s, err=%s", p.GetShortId(), p.Url, err.Error()))
 		return errors.New(bufferedStderr.String())
 	}
+	gefflog.Info(info)
+	p.Info = info
+	p.SetThumbnail()
+	p.Progress.Status = StatusPending
 	p.Pid = p.Info.Id
 	p.Update()
 	return nil
@@ -540,8 +525,8 @@ func buildFilename(o *DownloadOutput) {
 }
 
 func (p *Process) Insert() error {
-	p.mux.Lock()
-	defer p.mux.Unlock()
+	//p.mux.Lock()
+	//defer p.mux.Unlock()
 	pInfo, _ := json.Marshal(p.Info)
 	pProgress, _ := json.Marshal(p.Progress)
 	pOutput, _ := json.Marshal(p.Output)
@@ -560,8 +545,8 @@ func (p *Process) Insert() error {
 	return nil
 }
 func (p *Process) Update() {
-	p.mux.Lock()
-	defer p.mux.Unlock()
+	//p.mux.Lock()
+	//defer p.mux.Unlock()
 	gefflog.Info("更新数据:" + strconv.FormatInt(p.Id, 10))
 	pInfo, _ := json.Marshal(p.Info)
 	pProgress, _ := json.Marshal(p.Progress)
@@ -573,8 +558,8 @@ func (p *Process) Update() {
 	}
 }
 func (p *Process) UpdateProgress(args ...int) {
-	p.mux.Lock()
-	defer p.mux.Unlock()
+	//p.mux.Lock()
+	//defer p.mux.Unlock()
 	if len(args) != 0 {
 		p.Progress.Status = args[0]
 	}
@@ -585,12 +570,13 @@ func (p *Process) UpdateProgress(args ...int) {
 	}
 }
 func (p *Process) Delete() {
-	p.mux.Lock()
-	defer p.mux.Unlock()
+	//p.mux.Lock()
+	//defer p.mux.Unlock()
 	_, err := SqliteS.Execute(ProcessDelete, 1, p.Id)
 	if err != nil {
 		gefflog.Err("Process Delete error: " + err.Error())
 	}
+	YdpConfig.Mdb.Delete(p.Pid)
 }
 func (p *Process) IsExist() int {
 	gefflog.Info(p.Pid)
@@ -657,10 +643,13 @@ func (p *Process) Unmarshal(dst map[string]any) {
 	}
 	if value, ok := dst["params"]; ok {
 		t, ok := value.(string)
+		//if ok {
+		//	p.Params = strings.Split(t, ",")
+		//} else {
+		//	p.Params = []string{}
+		//}
 		if ok {
 			p.Params = strings.Split(t, ",")
-		} else {
-			p.Params = []string{}
 		}
 	}
 	if value, ok := dst["biliMeta"]; ok {

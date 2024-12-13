@@ -14,7 +14,7 @@ import {
   CheckPermissions,
   SwitchPermissions
 } from '@/utils'
-import {FolderOpenOutlined} from "@ant-design/icons-vue";
+import {AppChangeLog} from "@/bridge/utils";
 import TranslateSetting from "@/views/SettingsView/components/TranslateSetting.vue";
 
 const isAdmin = ref(false)
@@ -24,6 +24,7 @@ const { t } = useI18n()
 const { message } = useMessage()
 const appSettings = useAppSettingsStore()
 const envStore = useEnvStore()
+
 
 const themes = [
   {
@@ -110,8 +111,7 @@ const handleOpenFolder = async () => {
 const handleOpenLogFolder = async () => {
   const { basePath } = await GetEnv()
   if(appSettings.app.logPath === ''){
-    console.log(basePath+ "/log")
-    await Browser.OpenURL(basePath+ "/log")
+    await Browser.OpenURL(basePath+ "/logs")
   }else {
     await Browser.OpenURL(appSettings.app.logPath)
   }
@@ -121,6 +121,7 @@ const handelSelectLogFolderDialog =async ()=>{
     const folder = await  OpenDirectoryDialog()
     if (folder.length!==0) {
       appSettings.app.logPath = folder
+      await AppChangeLog(0,folder)
     }
   }catch (error :any){
     message.error("选择文件夹失败")
@@ -340,6 +341,7 @@ if (envStore.env.os === 'windows') {
       font-size: 18px;
       font-weight: bold;
       padding: 8px 0 16px 0;
+      margin-bottom: 10px;
       .tips {
         font-weight: normal;
         font-size: 12px;
@@ -347,6 +349,8 @@ if (envStore.env.os === 'windows') {
     }
     .card{
       width: 100%;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(-10px); /* 让元素上移 */
       &-item{
         height: 30px;
         margin: 0 5px;

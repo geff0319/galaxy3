@@ -145,6 +145,10 @@ const deleteVideo = async (id: number) => {
         <!-- 纯圆形遮罩 -->
         <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
       </div>
+      <div class="overlay" v-show="p.progress.process_status === 0">
+        <!-- 纯圆形遮罩 -->
+        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
+      </div>
       <a-flex vertical gap="small" >
         <a-row :gutter="16">
           <a-col :span="18" >
@@ -166,9 +170,13 @@ const deleteVideo = async (id: number) => {
     </Card>
     <a-card v-if="appSettingsStore.app.ytdlpView === View.List" v-for="(p, index) in ytdlpStore.process" size="small" class="a-card" >
       <!--      View.List-->
-      <div class="overlay" v-menu="generateMenus(p)" v-show="p.progress.process_status === 3">
-        <!-- 纯圆形遮罩 -->
+      <div class="overlay" v-menu="generateMenus(p)" v-if="p.progress.process_status === 3">
+        <!-- 失败遮罩 -->
         <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
+      </div>
+      <div class="overlay" v-show="p.progress.process_status === 0">
+        <!-- 加载中遮罩 -->
+        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
       </div>
       <div :class="'card-' + appSettingsStore.app.ytdlpView">
         <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px; display: flex;justify-content: center; align-items: center;">
@@ -290,13 +298,13 @@ const deleteVideo = async (id: number) => {
 }
 .a-card{
   margin: 5px 0;
-  background-color: rgb(243,243,243);
-  border: 1px solid  rgba(232,232,232,0.99);
+  background-color: rgb(250,250,250);
+  border: 1px solid  rgba(234,234,234,0.99);
   transition:
       box-shadow 0.4s,
       background-color 0.4s;
   &:hover {
-    background-color: var(--card-hover-bg);
+    background-color: rgba(222,222,222,0.99);
     box-shadow: 0 8px 8px rgba(0, 0, 0, 0.06);
   }
 }
@@ -331,7 +339,7 @@ const deleteVideo = async (id: number) => {
   //background-color: rgba(0, 0, 0, 0.7); /* 半透明黑色背景 */
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* 半透明黑色背景 */
+  background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
   border-radius: 8px; /* 圆形边框 */
   z-index: 1; /* 确保遮光罩在内容之上 */
 }
@@ -341,6 +349,22 @@ const deleteVideo = async (id: number) => {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 48px;
+}
+.icon-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  //font-size: 48px;
+  animation: rotate 2s linear infinite; /* 应用旋转动画 */
+}
+@keyframes rotate {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg); /* 初始状态 */
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg); /* 旋转一圈 */
+  }
 }
 .unselectable-image {
   border-radius: 8px; /* 设置圆角 */

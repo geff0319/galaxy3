@@ -5,7 +5,7 @@ import {parse, stringify} from 'yaml'
 import i18n from '@/lang'
 import {debounce} from '@/utils'
 import {Readfile, Writefile} from '@/bridge'
-// import { Readfile, Writefile } from "@/bindings/galaxy3/bridge/app";
+import {Execute, Select} from "@/bindings/github.com/geff0319/galaxy3/bridge/sqliteservice";
 import {Color, Colors, Lang, Theme, View, WindowStartState} from '@/constant'
 import {AppChangeLog} from "@/bridge/utils";
 
@@ -130,18 +130,37 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
 
   const saveAppSettings = debounce((config: string) => {
     console.log('save app settings')
-    Writefile('data/user.yaml', config)
+    // Writefile('data/user.yaml', config)
+    console.log(config)
+    Execute("UPDATE config SET  config_value= ? WHERE config_name = 'user';",config)
 
   }, 1500)
 
   const setupAppSettings = async () => {
     try {
-      const b = await Readfile('data/user.yaml')
-      app.value = Object.assign(app.value, parse(b))
-    } catch (error) {
-      firstOpen = false
-      console.log(error)
+      const res = await Select("SELECT config_value FROM config WHERE config_name = 'user' limit 1;")
+      if(res !== null && res !== undefined && res.length !==0){
+        if(res[0]?.["config_value"] ===''){
+          await saveAppSettings()
+        }else {
+          app.value = Object.assign(app.value, parse(res[0]?.["config_value"]))
+        }
+      }else {
+        //插入配置
+        Execute("INSERT into config (config_name,config_value) VALUES(?,?)","user",stringify(app.value))
+      }
     }
+    catch (error) {
+        firstOpen = false
+        console.log("setupAppSettings err:" + error)
+      }
+    // try {
+    //   const b = await Readfile('data/user.yaml')
+    //   app.value = Object.assign(app.value, parse(b))
+    // } catch (error) {
+    //   firstOpen = false
+    //   console.log(error)
+    // }
 
     updateAppSettings(app.value)
   }
@@ -179,7 +198,7 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     document.documentElement.style.setProperty('--primary-color', primary)
     document.documentElement.style.setProperty('--secondary-color', secondary)
     document.body.style.fontFamily = settings['font-family']
-    AppChangeLog(0,settings.logPath)
+    // AppChangeLog(0,settings.logPath)  //换成选完文件夹直接该
   }
 
   watch(

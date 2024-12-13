@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/ge-fei-fan/gefflog"
 	"github.com/geff0319/galaxy3/bridge/website"
-	"gopkg.in/yaml.v3"
-	"os"
 	"strconv"
 )
 
@@ -42,21 +40,22 @@ func (a *App) DownloadYoutubeByKey(p string, retry bool) FlagResult {
 		if process.IsExist() >= 1 {
 			return FlagResult{false, "下载视频失败,任务已存在"}
 		} else {
-			//YdpConfig.Mdb.Set(&process)
 			err := process.Insert()
 			if err != nil {
 				return FlagResult{true, "下载视频失败:" + err.Error()}
 			}
+			gefflog.Info(fmt.Sprintf("开始下载：%s", process.Pid))
 			YdpConfig.Mq.PublishByTopic("process:downloading", &process)
 			return FlagResult{true, strconv.FormatInt(process.Id, 10)}
 		}
 	} else {
 		if process.Info.Id == "" {
-			gefflog.Info("重试解析: " + strconv.FormatInt(process.Id, 10))
+			gefflog.Info(fmt.Sprintf("重试解析：%+v", process))
 			YdpConfig.Mq.Publish(&process)
 		} else {
-			gefflog.Info("重试下载: " + strconv.FormatInt(process.Id, 10))
-			process.SetPending()
+			gefflog.Info(fmt.Sprintf("重试下载：%s", process.Pid))
+			process.Progress.Status = StatusPending
+			process.Update()
 			YdpConfig.Mq.PublishByTopic("process:downloading", &process)
 		}
 		return FlagResult{true, strconv.FormatInt(process.Id, 10)}
@@ -75,7 +74,6 @@ func (a *App) DownloadYoutube(url string, params []string) FlagResult {
 			SelectedVideoQuality: "",
 		},
 	}
-	//id := YdpConfig.Mdb.Set(p)
 	err := p.Insert()
 	if err != nil {
 		return FlagResult{Flag: false, Data: "添加失败:" + err.Error()}
@@ -95,16 +93,26 @@ func (a *App) DownloadYoutube(url string, params []string) FlagResult {
 //}
 
 func (a *App) All() FlagResultWithData {
-	//res := YdpConfig.Mdb.All()
 	res, err := SqliteS.Select(ProcessAll)
 	if err != nil {
 		gefflog.Err("SelectProcess err:" + err.Error())
 	}
-	var p Process
 	ps := []Process{}
 	for _, r := range res {
+		var p Process
 		p.Unmarshal(r)
-		ps = append(ps, p)
+		if p.Progress.Status != StatusDownloading {
+			//gefflog.Info(p.Info.FileName + ": 是下载完成的")
+			ps = append(ps, p)
+			continue
+		}
+		//gefflog.Info(p.Info.FileName + ": 是正在下载的")
+		dstP, _ := YdpConfig.Mdb.Get(p.Pid)
+		if dstP != nil {
+			ps = append(ps, *dstP)
+		} else {
+			ps = append(ps, p)
+		}
 	}
 	return FlagResultWithData{
 		Flag: true,
@@ -114,12 +122,17 @@ func (a *App) All() FlagResultWithData {
 }
 
 func (a *App) UpdateYtDlpConfig() FlagResult {
-	b, err := os.ReadFile(Env.BasePath + "/data/ytdlp.yaml")
+	//b, err := os.ReadFile(Env.BasePath + "/data/ytdlp.yaml")
+	//if err != nil {
+	//	gefflog.Err("更新配置失败: " + err.Error())
+	//	return FlagResult{false, "更新配置失败"}
+	//}
+	//if err := yaml.Unmarshal(b, &YdpConfig); err != nil {
+	//	gefflog.Err("更新配置失败: " + err.Error())
+	//	return FlagResult{false, "更新配置失败"}
+	//}
+	err := YdpConfig.Unmarshal()
 	if err != nil {
-		gefflog.Err("更新配置失败: " + err.Error())
-		return FlagResult{false, "更新配置失败"}
-	}
-	if err := yaml.Unmarshal(b, &YdpConfig); err != nil {
 		gefflog.Err("更新配置失败: " + err.Error())
 		return FlagResult{false, "更新配置失败"}
 	}
@@ -127,24 +140,17 @@ func (a *App) UpdateYtDlpConfig() FlagResult {
 }
 
 func (a *App) Delete(id int64) FlagResult {
-	var p Process
-
-	//gefflog.Info("删除任务 id:" + strconv.FormatInt(id, 10))
-	//p, err := YdpConfig.Mdb.Get(id)
-	//if err != nil {
-	//	gefflog.Err(fmt.Sprintf("删除任务失败 id: %s, err: %s", id, err.Error()))
-	//	return FlagResult{false, "删除任务失败:"}
-	//}
-	//if p == nil {
-	//	return FlagResult{false, "删除任务失败: nil process"}
-	//}
-
-	//p.Id, _ = strconv.ParseInt(id, 10, 64)
-	p.Id = id
+	p := &Process{
+		Id: id,
+	}
 	p.FindById()
 	if p.Id == 0 {
 		gefflog.Err("删除任务失败,任务不存在")
 		return FlagResult{false, "删除任务失败,任务不存在"}
+	}
+	res, _ := YdpConfig.Mdb.Get(p.Pid)
+	if res != nil {
+		p = res
 	}
 	if p.Progress.Status == StatusPending || p.Progress.Status == StatusDownloading {
 		if err := p.Kill(); err != nil {
@@ -157,6 +163,7 @@ func (a *App) Delete(id int64) FlagResult {
 		//YdpConfig.Mdb.Delete(p.Id)
 	}
 	p.Delete()
+	fmt.Println(id)
 	return FlagResult{true, "删除成功"}
 }
 

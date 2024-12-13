@@ -3,7 +3,8 @@ import { useI18n } from 'vue-i18n'
 import icons from '@/components/Icon/icons'
 
 type TabItemType = {
-  icon:(typeof icons)[number]
+  // icon:(typeof icons)[number]
+  icon:string
   key: string
   tab: string
 }
@@ -35,9 +36,11 @@ const isActive = ({ key }: TabItemType) => key === props.activeKey
         :key="tab.key"
         @click="handleChange(tab.key)"
         class="custom-btn"
-        :class="{'active-tab':isActive(tab)}"
+        :class="[{'active-tab':isActive(tab)},{ custom_icon: !isActive(tab) }]"
       >
-        <icon :icon="tab.icon "></icon>
+        <svg v-if="isActive(tab)" > <use :href="`#${tab.icon}-active`||`forbid`"></use></svg>
+        <svg v-else > <use :href="`#${tab.icon}`||`forbid`"></use></svg>
+<!--        <icon :icon="tab.icon "></icon>-->
         <span :style="{marginLeft: '8px'}">{{ t(tab.tab) }}</span>
       </button>
 
@@ -51,6 +54,11 @@ const isActive = ({ key }: TabItemType) => key === props.activeKey
 </template>
 
 <style lang="less" scoped>
+@import "@/assets/main";
+
+.custom_icon{
+  .icon_hover();
+}
 .tabs {
   display: flex;
 }
@@ -88,6 +96,10 @@ const isActive = ({ key }: TabItemType) => key === props.activeKey
   &:active {
     color: var(--btn-text-active-color);
     background-color: var(--btn-text-active-bg);
+  }
+  svg {
+    width: 22px;
+    height: 22px;
   }
 }
 button.active-tab {

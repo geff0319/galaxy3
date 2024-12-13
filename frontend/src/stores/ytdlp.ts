@@ -12,6 +12,7 @@ import {message} from "ant-design-vue";
 import {Readfile, Writefile} from "@/bridge";
 import {parse, stringify} from "yaml";
 import {debounce} from "@/utils";
+import {Execute, Select} from "@/bindings/github.com/geff0319/galaxy3/bridge/sqliteservice";
 
 
 export type ProcessType = {
@@ -68,6 +69,7 @@ export type ProcessType = {
         }
         SelectedVideoStreamUrl:string
         SelectedVideoQuality:string
+        SelectedVideoCodecs:string
     }
 }
 
@@ -157,7 +159,8 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
                 }
             },
             SelectedVideoStreamUrl:'',
-            SelectedVideoQuality:''
+            SelectedVideoQuality:'',
+            SelectedVideoCodecs:''
         }
     })
     const menuShow = ref(true)
@@ -270,12 +273,23 @@ type YtdlpSetting = {
 export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
     let latestYtdlpConfig = ''
     const ytdlpConfig = ref<YtdlpSetting>({cookies: {bilibili:""}, queueSize: "", downloadPath: ""})
+    let firstOpen = true
 
     const setupYtdlpSettings = async () => {
         try {
-            const b = await Readfile('data/ytdlp.yaml')
-            ytdlpConfig.value = Object.assign(ytdlpConfig.value, parse(b))
+            const res = await Select("SELECT config_value FROM config WHERE config_name = 'ytdlp' limit 1;")
+            if(res !== null && res !== undefined && res.length !==0){
+                if(res[0]?.["config_value"] ==='') {
+                    await saveYtdlpSettings()
+                } else {
+                    ytdlpConfig.value = Object.assign(ytdlpConfig.value, parse(res[0]?.["config_value"]))
+                }
+            }else {
+                //插入配置
+                Execute("INSERT into config (config_name,config_value) VALUES(?,?)","ytdlp",stringify(ytdlpConfig.value))
+            }
         } catch (error) {
+            firstOpen = false
             console.log(error)
         }
 
@@ -283,8 +297,9 @@ export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
     const saveYtdlpSettings = debounce(async (config: string) => {
         console.log('save ytdlp settings')
         try {
-            await Writefile('data/ytdlp.yaml', config)
-            await UpdateYtDlpConfig()
+            // await Writefile('data/ytdlp.yaml', config)
+            Execute("UPDATE config SET  config_value= ? WHERE config_name = 'ytdlp';",config)
+
         }catch (error:any){
             message.error(error)
         }
@@ -294,15 +309,18 @@ export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
     watch(
         ytdlpConfig,
         (settings) => {
-
-            const lastModifiedConfig = stringify(settings)
-            if (latestYtdlpConfig !== lastModifiedConfig) {
-                saveYtdlpSettings(lastModifiedConfig).then(() => {
-                    latestYtdlpConfig = lastModifiedConfig
-                })
-            } else {
-                saveYtdlpSettings.cancel()
+            if (!firstOpen) {
+                UpdateYtDlpConfig()
+                const lastModifiedConfig = stringify(settings)
+                if (latestYtdlpConfig !== lastModifiedConfig) {
+                    saveYtdlpSettings(lastModifiedConfig).then(() => {
+                        latestYtdlpConfig = lastModifiedConfig
+                    })
+                } else {
+                    saveYtdlpSettings.cancel()
+                }
             }
+            firstOpen = false
         },
         { deep: true }
     )

@@ -16,6 +16,7 @@ import { NavigationBar,MainPage, TitleBar } from '@/components'
 import WidgetsView from "@/views/WidgetsView.vue";
 import { useRouter,useRoute } from 'vue-router';
 import {message as antmessage} from "ant-design-vue/es/components";
+import {useYtdlpSettingsStore, useYtdlpStore} from "@/stores";
 const route = useRoute();
 const router = useRouter();
 
@@ -27,6 +28,7 @@ const appSettings = Stores.useAppSettingsStore()
 const scheduledTasksStore = Stores.useScheduledTasksStore()
 const wsClientStore = Stores.useWsClientStore()
 const mqttClientStore = Stores.useMqttClientStore()
+const ytdlpStore = Stores.useYtdlpSettingsStore()
 
 const { message } = useMessage()
 const { picker } = usePicker()
@@ -47,6 +49,7 @@ Events.Once("appInit", function(event:any) {
       ignoredError(envStore.setupEnv),
       ignoredError(pluginsStore.setupPlugins),
       ignoredError(scheduledTasksStore.setupScheduledTasks),
+      ignoredError(ytdlpStore.setupYtdlpSettings),
     ])
     await sleep(1000)
 

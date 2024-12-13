@@ -2,8 +2,13 @@ package bridge
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/ge-fei-fan/gefflog"
 	"github.com/geff0319/galaxy3/bridge/website"
+	"github.com/geff0319/galaxy3/bridge/ytdlp"
+	"gopkg.in/yaml.v3"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -155,25 +160,72 @@ type YtDlpCookie struct {
 }
 type YtDlpConfig struct {
 	BasePath     string
-	DownloadPath string `yaml:"downloadPath"` //视频保存路径
-	YtDlpPath    string `yaml:"ytDlpPath"`    //下载程序路径
-	QueueSize    int    `yaml:"queueSize"`
-	//Mdb          *MemoryDB     `yaml:"-"`
-	Mq      *MessageQueue `yaml:"-"`
-	Cookies YtDlpCookie   `yaml:"cookies"`
+	DownloadPath string        `yaml:"downloadPath"` //视频保存路径
+	YtDlpPath    string        `yaml:"ytDlpPath"`    //下载程序路径
+	QueueSize    int           `yaml:"queueSize"`
+	Mdb          *MemoryDB     `yaml:"-"`
+	Mq           *MessageQueue `yaml:"-"`
+	Cookies      YtDlpCookie   `yaml:"cookies"`
+}
+
+func (yc *YtDlpConfig) Unmarshal() error {
+	b, err := SqliteS.Select(ConfigYtdlp)
+	if err != nil {
+		gefflog.Err("Select YtDlpConfig err:" + err.Error())
+		return err
+	}
+	if len(b) == 0 {
+
+		marshal, err := yaml.Marshal(yc)
+		if err != nil {
+			gefflog.Err("Marshal YtDlpConfig err:" + err.Error())
+			return err
+		}
+		fmt.Println(string(marshal))
+		_, err = SqliteS.Execute(ConfigInsert, "ytdlp", string(marshal))
+		if err != nil {
+			gefflog.Err("YtDlpConfig ConfigInsert err:" + err.Error())
+		}
+		return err
+	} else {
+		if value, ok := b[0]["config_value"]; ok {
+			t, ok := value.(string)
+			if ok {
+				err := yaml.Unmarshal([]byte(t), &yc)
+				if err != nil {
+					gefflog.Err("YtDlpConfig Unmarshal err:" + err.Error())
+				}
+				return err
+			} else {
+				marshal, err := yaml.Marshal(yc)
+				if err != nil {
+					gefflog.Err("Marshal YtDlpConfig err:" + err.Error())
+					return err
+				}
+				_, err = SqliteS.Execute(ConfigUpdate, string(marshal), "ytdlp")
+				if err != nil {
+					gefflog.Err("YtDlpConfig ConfigUpdate err:" + err.Error())
+				}
+			}
+		}
+		return err
+	}
 }
 
 var YdpConfig YtDlpConfig
 
-func InitYtDlpConfig(basePath string) {
-	//var mdb MemoryDB
+func InitYtDlpConfig() {
+	var mdb MemoryDB
 	YdpConfig = YtDlpConfig{
-		BasePath:     basePath,
-		DownloadPath: basePath + "/data/yt-dlp-download/",
-		YtDlpPath:    basePath + "/data/yt-dlp/yt-dlp.exe",
+		BasePath:     Env.BasePath,
+		DownloadPath: Env.BasePath + "/data/yt-dlp-download/",
+		YtDlpPath:    Env.BasePath + "/data/yt-dlp/yt-dlp.exe",
 		QueueSize:    8,
-		//Mdb:          &mdb,
-		Cookies: YtDlpCookie{},
+		Mdb:          &mdb,
+		Cookies:      YtDlpCookie{},
+	}
+	if !ytdlp.IsDirExists(YdpConfig.DownloadPath) {
+		os.MkdirAll(filepath.Dir(YdpConfig.DownloadPath), os.ModePerm)
 	}
 	//b, err := os.ReadFile(basePath + "/data/ytdlp.yaml")
 	//if os.IsNotExist(err) {
@@ -191,6 +243,8 @@ func InitYtDlpConfig(basePath string) {
 	//	}
 	//}
 
+	YdpConfig.Unmarshal()
+	fmt.Println(fmt.Sprintf("YdpConfig:%v+", YdpConfig))
 	mq, err := NewMessageQueue()
 	if err != nil {
 		gefflog.Err("初始化下载消息队列失败：" + err.Error())

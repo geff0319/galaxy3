@@ -4,30 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/ge-fei-fan/gefflog"
-	"github.com/geff0319/galaxy3/bridge/ytdlp"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
 )
-
-const ProcessTable = `CREATE TABLE "process" (
-  "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "pid" text,
-  "url" text,
-  "params" text,
-  "info" text,
-  "progress" text,
-  "output" text,
-  "biliMeta" text,
-  "is_delete" integer DEFAULT 0,
-  "create_time" DATE DEFAULT CURRENT_TIMESTAMP
-);`
-
-const ProcessInsert = `INSERT INTO process ("url", "params", "info", "progress", "output", "biliMeta") VALUES (?, ?, ?, ?, ?, ?);`
-const ProcessUpdate = `UPDATE process SET "pid" = ?,"info" = ?, "progress" = ?, "output" = ?, "biliMeta" = ? WHERE "id" = ?;`
-const ProcessUpdateProgress = `UPDATE process SET "progress" = ? WHERE "id" = ?;`
-const ProcessDelete = `UPDATE process SET "is_delete" = ? WHERE "id" = ?;`
-const ProcessAll = `SELECT id,pid,url, params,info,progress,output FROM process where is_delete = 0 ORDER BY create_time DESC`
 
 type SqliteService struct {
 	DBFile string
@@ -66,20 +47,33 @@ func (s *SqliteService) OnStartup(ctx context.Context, options application.Servi
 		return errors.New(`no database file specified. Please set DBFile in the config to either a filename or use ":memory:" to use an in-memory database`)
 	}
 	gefflog.Info("连接数据库·····")
-	if !ytdlp.IsFileExist(s.DBFile) {
-		err := s.Init()
-		if err != nil {
-			gefflog.Err(err.Error())
-			return err
-		}
-	} else {
-		_, err := s.Open(s.DBFile)
-		if err != nil {
-			gefflog.Err(err.Error())
-			return err
+	fmt.Println(s.DBFile)
+	err := s.Init()
+	if err != nil {
+		gefflog.Err(err.Error())
+		return err
+	}
+	// 读取user配置
+	Config.Unmarshal()
+	gefflog.ChangeLogger(0, Config.LogPath)
+
+	// ytdlp配置
+	InitYtDlpConfig()
+
+	//替换视频状态
+	res, err := s.Select(`SELECT id FROM process WHERE JSON_EXTRACT(progress, '$.process_status') != 2 AND is_delete = 0;`)
+	if err != nil {
+		gefflog.Err("查询视频状态error: " + err.Error())
+	}
+	for _, i := range res {
+		v, ok := i["id"].(int64)
+		if ok {
+			_, err := s.Execute(`UPDATE process SET progress = '{"process_status":3,"percentage":"","speed":0,"eta":0}' WHERE id = ?`, v)
+			if err != nil {
+				gefflog.Err("替换视频状态error: " + err.Error())
+			}
 		}
 	}
-
 	return nil
 }
 
@@ -98,9 +92,12 @@ func (s *SqliteService) Init() error {
 	}
 	_, err = s.Execute(ProcessTable)
 	if err != nil {
-		return err
+		return errors.New("create process err: " + err.Error())
 	}
-
+	_, err = s.Execute(ConfigTable)
+	if err != nil {
+		return errors.New("create config err: " + err.Error())
+	}
 	return nil
 }
 func (s *SqliteService) Execute(query string, args ...any) (sql.Result, error) {

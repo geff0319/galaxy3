@@ -29,46 +29,6 @@ const handelOpenDirDialog =()=>{
 <template>
   <div class="settings">
     <div class="settings-item">
-<!--      <div class="title">配置项</div>-->
-<!--      <div class="input-wrapper">-->
-<!--        <h5 class="label">下载目录: </h5>-->
-<!--        <div class="input-container">-->
-<!--          <a-tooltip :title="ytdlpSettingsStore.ytdlpConfig.downloadPath">-->
-<!--            <a-input style="margin-right: 10px"  disabled v-model:value="ytdlpSettingsStore.ytdlpConfig.downloadPath" placeholder="请选择视频下载目录" />-->
-<!--          </a-tooltip>-->
-<!--&lt;!&ndash;          <a-button style="width: 40px" type="primary" size="middle" @click="handelOpenFileDialog">&ndash;&gt;-->
-<!--&lt;!&ndash;            <template #icon>&ndash;&gt;-->
-<!--&lt;!&ndash;              <FolderOpenOutlined />&ndash;&gt;-->
-<!--&lt;!&ndash;            </template>&ndash;&gt;-->
-<!--&lt;!&ndash;          </a-button>&ndash;&gt;-->
-<!--          <div style="display: flex;" >-->
-<!--            <a-button type="link" block @click="handelOpenFileDialog">选择目录</a-button>-->
-<!--            <a-button type="link" block @click="handelOpenDirDialog">打开</a-button>-->
-<!--          </div>-->
-
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="input-wrapper">-->
-<!--        <h5 class="label">并发数量(重启生效): </h5>-->
-<!--        <div class="input-container">-->
-<!--          <a-input-number v-model:value="ytdlpSettingsStore.ytdlpConfig.queueSize" :min="1" :max="10" />-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="title">Cookie</div>-->
-<!--      <div class="input-wrapper">-->
-<!--        <h5 class="label">bilibili: </h5>-->
-<!--        <div class="input-container">-->
-<!--          <a-input-password style="width:400px;" :bordered="false" v-model:value="ytdlpSettingsStore.ytdlpConfig.cookies.bilibili" placeholder="input cookie" />-->
-<!--          <a-button style="text-align: left;" type="link" block @click="biliQrOpen">点击扫码登录</a-button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <YtDlp />-->
-    </div>
-
-  </div>
-
-  <div class="settings">
-    <div class="settings-item">
       <div class="title">配置项</div>
       <a-card class="card" size="small">
         <div class="card-item">
@@ -131,6 +91,7 @@ const handelOpenDirDialog =()=>{
       font-size: 18px;
       font-weight: bold;
       padding: 8px 0 16px 0;
+      margin-bottom: 10px;
       .tips {
         font-weight: normal;
         font-size: 12px;
@@ -138,6 +99,8 @@ const handelOpenDirDialog =()=>{
     }
     .card{
       width: 100%;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      transform: translateY(-10px); /* 让元素上移 */
       &-item{
         height: 30px;
         margin: 0 5px;

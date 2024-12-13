@@ -6,6 +6,7 @@ import {debounce} from "@/utils";
 import {message} from "ant-design-vue";
 import {appConnectMqtt, appDisconnectMqtt, appStatusMqtt} from "@/bridge/mqtt";
 import {message as antmessage} from "ant-design-vue/es/components";
+import {Execute, Select} from "@/bindings/github.com/geff0319/galaxy3/bridge/sqliteservice";
 
 
 export type MqttInfoType = {
@@ -69,20 +70,37 @@ export const useMqttClientStore = defineStore('mqttClient', () => {
 
     const setupMqttSettings = async () => {
         try {
-            const b = await Readfile('data/mqtt.yaml')
-            mqttInfo.value = Object.assign(mqttInfo.value, parse(b))
-            if(mqttInfo.value.autoConnect){
-                console.log("mqtt init connect")
-                await connectMqtt()
+            // const b = await Readfile('data/mqtt.yaml')
+            // mqttInfo.value = Object.assign(mqttInfo.value, parse(b))
+            // if(mqttInfo.value.autoConnect){
+            //     console.log("mqtt init connect")
+            //     await connectMqtt()
+            // }
+            const res = await Select("SELECT config_value FROM config WHERE config_name = 'mqtt' limit 1;")
+            if(res !== null && res !== undefined && res.length !==0){
+                if(res[0]?.["config_value"] ===''){
+                    await saveMqttSettings()
+                }else {
+                    mqttInfo.value = Object.assign(mqttInfo.value, parse(res[0]?.["config_value"]))
+                    if(mqttInfo.value.autoConnect){
+                        console.log("mqtt init connect")
+                        await connectMqtt()
+                    }
+                }
+            }else {
+                //插入配置
+                Execute("INSERT into config (config_name,config_value) VALUES(?,?)","mqtt",stringify(mqttInfo.value))
             }
         } catch (error) {
             firstOpen = false
             console.log(error)
         }
     }
+
     const saveMqttSettings = debounce((config: string) => {
         console.log('save mqtt settings')
-        Writefile('data/mqtt.yaml', config)
+        // Writefile('data/mqtt.yaml', config)
+        Execute("UPDATE config SET  config_value= ? WHERE config_name = 'mqtt';",config)
 
     }, 1500)
 

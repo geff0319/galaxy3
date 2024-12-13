@@ -25,7 +25,8 @@ const routes: RouteRecordRaw[] = [
     meta: {
       name: 'router.overview',
       newlayout: false,
-      keepAlive:true
+      keepAlive:true,
+      icon:"home"
     }
   },
   {
@@ -64,7 +65,8 @@ const routes: RouteRecordRaw[] = [
     component: PluginsView,
     meta: {
       name: 'router.plugins',
-      keepAlive:true
+      keepAlive:true,
+      icon:"api"
     }
   },
   {
@@ -73,7 +75,8 @@ const routes: RouteRecordRaw[] = [
     component: TranslationView,
     meta: {
       name: 'router.translation',
-      keepAlive:true
+      keepAlive:true,
+      icon:"translation"
     }
   },
   {
@@ -82,7 +85,8 @@ const routes: RouteRecordRaw[] = [
     component: YtdlpView,
     meta: {
       name: '下载',
-      keepAlive:false
+      keepAlive:false,
+      icon:"download-three"
     }
   },
   {
@@ -113,7 +117,8 @@ const routes: RouteRecordRaw[] = [
     component: ScheduledTasksView,
     meta: {
       name: 'router.scheduledtasks',
-      keepAlive:true
+      keepAlive:true,
+      icon:"plan"
     }
   },
   {
@@ -122,7 +127,8 @@ const routes: RouteRecordRaw[] = [
     component: SettingsView,
     meta: {
       name: 'router.settings',
-      keepAlive:true
+      keepAlive:true,
+      icon:"setting-two"
     }
   },
   {

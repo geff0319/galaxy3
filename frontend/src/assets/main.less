@@ -111,6 +111,7 @@ a {
   }
 }
 
+
 .grid-list-grid {
   flex: 1;
   margin-top: 8px;
@@ -161,4 +162,27 @@ a {
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
   background: var(--scrollbar-thumb-bg);
+}
+//@left-bg-hover: #f0f0f0;  // 设置默认值
+//@left-active-hover: #333;  // 设置默认值
+
+.icon_hover() {
+  &:not(.active):hover {
+    //background: @left-bg-hover;  // 使用 LESS 变量
+    //border-radius: 8px;
+    //color: @left-active-hover;  // 使用 LESS 变量
+    //cursor: pointer;
+    animation: linearAnimation 2s linear forwards;
+  }
+}
+// 线性动画
+@keyframes linearAnimation {
+  0% {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+  }
+  100% {
+    stroke-dasharray: 600;
+    stroke-dashoffset: 0;
+  }
 }

@@ -2,6 +2,8 @@ package bridge
 
 import (
 	"context"
+	"github.com/ge-fei-fan/gefflog"
+	"gopkg.in/yaml.v3"
 	"net/http"
 )
 
@@ -88,4 +90,38 @@ type YoutubeVideoMeta struct {
 	Formats          []FormatsMeta `json:"formats"`
 	Filename         string        `json:"filename"`
 	RequestedFormats []FormatsMeta `json:"requested_formats"`
+}
+
+func (ac *AppConfig) Unmarshal() {
+	b, err := SqliteS.Select(ConfigUser)
+	if err != nil || len(b) == 0 || b == nil {
+		ac.WindowStartState = 0
+		ac.ExitOnClose = true
+		ac.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+		ac.LogPath = Env.BasePath + "/logs"
+		return
+	} else {
+		if value, ok := b[0]["config_value"]; ok {
+			t, ok := value.(string)
+			if ok {
+				err := yaml.Unmarshal([]byte(t), ac)
+				if err != nil {
+					gefflog.Err("AppConfig Unmarshal err:" + err.Error())
+					ac.WindowStartState = 0
+					ac.ExitOnClose = true
+					ac.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+					ac.LogPath = Env.BasePath + "/logs"
+					return
+				}
+				if ac.LogPath == "" {
+					ac.LogPath = Env.BasePath + "/logs"
+				}
+			} else {
+				ac.WindowStartState = 0
+				ac.ExitOnClose = true
+				ac.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+				ac.LogPath = Env.BasePath + "/logs"
+			}
+		}
+	}
 }

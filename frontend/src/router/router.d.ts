@@ -6,5 +6,6 @@ declare module 'vue-router' {
     hidden?: boolean
     newlayout?:boolean
     keepAlive?:boolean
+    icon?:string
   }
 }

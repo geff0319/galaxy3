@@ -13,15 +13,16 @@ import icons from '@/components/Icon/icons'
 
 
 type TabItemType = {
-  icon:(typeof icons)[number]
+  // icon:(typeof icons)[number]
+  icon:string
   key: string
   tab: string
 }
 
 const settings:TabItemType[] = [
-  { icon:'setting',key: 'general', tab: 'settings.general' },
+  { icon:'system',key: 'general', tab: 'settings.general' },
   { icon:'video',key: 'ytdlp', tab: '视频配置' },
-  { icon:'mqtt',key: 'mqtt', tab: '通信配置' },
+  { icon:'server',key: 'mqtt', tab: '通信配置' },
   // { key: 'websocket', tab: 'WebSocket' },
   // { key: 'kernel', tab: 'router.kernel' }
 ]
@@ -30,7 +31,7 @@ const activeKey = ref(settings[0].key)
 
 const { t } = useI18n()
 const appStore = useAppStore()
-useYtdlpSettingsStore().setupYtdlpSettings()
+
 </script>
 
 <template>
@@ -60,7 +61,8 @@ useYtdlpSettingsStore().setupYtdlpSettings()
 
     <template #extra>
       <button class="custom-btn" @click="appStore.showAbout = true">
-        <icon icon="about"></icon>
+<!--        <icon icon="about"></icon>-->
+        <svg> <use href="#info"></use></svg>
         <span :style="{marginLeft: '8px'}">{{ t('router.about') }}</span>
       </button>
     </template>
@@ -68,6 +70,8 @@ useYtdlpSettingsStore().setupYtdlpSettings()
 </template>
 
 <style lang="less" scoped>
+@import "@/assets/main";
+
 .custom-btn {
   width: 80%;
   padding: 8px 12px;
@@ -83,6 +87,7 @@ useYtdlpSettingsStore().setupYtdlpSettings()
   justify-content: flex-start; /* 左对齐 */
   align-items: center;
   border-radius: 6px;
+  .icon_hover();
   &:hover {
     color: var(--btn-text-hover-color);
     background-color: var(--btn-text-hover-bg);
@@ -90,6 +95,10 @@ useYtdlpSettingsStore().setupYtdlpSettings()
   &:active {
     color: var(--btn-text-active-color);
     background-color: var(--btn-text-active-bg);
+  }
+  svg {
+    width: 22px;
+    height: 22px;
   }
 }
 button.active-tab {

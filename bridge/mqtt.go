@@ -36,9 +36,7 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 	gefflog.Info(fmt.Sprintf("Connected"))
-
 }
-
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 	gefflog.Info(fmt.Sprintf("mqtt Connect lost: %v", err))
 }

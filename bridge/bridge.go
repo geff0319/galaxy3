@@ -2,12 +2,11 @@ package bridge
 
 import (
 	_ "embed"
-	"github.com/ge-fei-fan/gefflog"
+	"fmt"
+	"github.com/geff0319/galaxy3/bridge/ytdlp"
 	"github.com/klauspost/cpuid/v2"
 	"github.com/wailsapp/wails/v3/pkg/application"
-	"gopkg.in/yaml.v3"
 	"io/fs"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -57,18 +56,18 @@ func InitBridge(assets fs.FS) {
 		}
 	}
 	Env.BasePath = filepath.Dir(exePath)
-	basePath := Env.BasePath + "/data/user.yaml"
-	log.Printf(basePath)
 	Env.AppName = filepath.Base(exePath)
-
-	// step2: Read Config
-	b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
-	if err == nil {
-		yaml.Unmarshal(b, &Config)
+	fmt.Println(Env.BasePath + "/data/")
+	if !ytdlp.IsDirExists(Env.BasePath + "/data/") {
+		os.MkdirAll(filepath.Dir(Env.BasePath+"/data/"), os.ModePerm)
 	}
 
-	InitYtDlpConfig(Env.BasePath)
-	gefflog.ChangeLogger(0, Config.LogPath)
+	// step2: Read Config
+	//b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
+	//if err == nil {
+	//	yaml.Unmarshal(b, &Config)
+	//}
+	//放在sqlite初始化之后
 
 	MainApp = application.New(application.Options{
 		Name:        "galaxy3",
@@ -88,6 +87,9 @@ func InitBridge(assets fs.FS) {
 }
 
 func (a *App) RestartApp() FlagResult {
+	if MqttC.status() {
+		MqttC.disconnect()
+	}
 	exePath := Env.BasePath + "/" + Env.AppName
 
 	cmd := exec.Command(exePath)

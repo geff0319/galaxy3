@@ -88,6 +88,7 @@ const generateOptions= ()=>{
   handleChange(options[0].value)
   const [selectQuality, selectCodecs] = options[0].label.split('|')
   ytdlpStore.resProcess.biliMeta.SelectedVideoQuality = selectQuality
+  ytdlpStore.resProcess.biliMeta.SelectedVideoCodecs = selectCodecs
   // console.log(winId.value + 'option')
   // Events.Emit({name:winId.value + 'option',data:[options]})
 }

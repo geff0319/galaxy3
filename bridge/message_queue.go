@@ -65,6 +65,7 @@ func (m *MessageQueue) downloadConsumer() {
 		gefflog.Info(fmt.Sprintf("下载开始：received process from event bus bus=%s consumer=downloadConsumer id=%s", queueName, p.GetShortId()))
 
 		if p.Progress.Status != StatusCompleted {
+			fmt.Println(p)
 			p.Start()
 		}
 		gefflog.Info(fmt.Sprintf("started process bus=%s id=%s", queueName, p.GetShortId()))

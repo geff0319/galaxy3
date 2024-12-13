@@ -7,16 +7,18 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/regions"
 	tmt "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tmt/v20180321"
-	"gopkg.in/yaml.v3"
-	"os"
 )
 
 func NewClient() (*tmt.Client, error) {
-	b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
-	if err != nil {
+	//b, err := os.ReadFile(Env.BasePath + "/data/user.yaml")
+	//if err != nil {
+	//	return nil, errors.New("翻译密钥未配置")
+	//}
+	//yaml.Unmarshal(b, &Config)
+	Config.Unmarshal()
+	if Config.Translate.TencentTanslateSecretId == "" || Config.Translate.TencentTanslateSecretKey == "" {
 		return nil, errors.New("翻译密钥未配置")
 	}
-	yaml.Unmarshal(b, &Config)
 	credential := common.NewCredential(Config.Translate.TencentTanslateSecretId, Config.Translate.TencentTanslateSecretKey)
 	cpf := profile.NewClientProfile()
 	client, err := tmt.NewClient(credential, regions.Guangzhou, cpf)
