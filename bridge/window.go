@@ -42,7 +42,7 @@ func InitMianWin() {
 		Frameless:       true,
 		DevToolsEnabled: true,
 		DisableResize:   true,
-		Centered:        true,
+		InitialPosition: application.WindowCentered,
 		Hidden:          true,
 		ShouldClose: func(window *application.WebviewWindow) bool {
 			//直接窗口不关闭，等处理完成app退出
@@ -104,7 +104,7 @@ func YtdlpWinShow() {
 		DisableResize:   true,
 		Hidden:          true,
 		AlwaysOnTop:     true,
-		Centered:        true,
+		InitialPosition: application.WindowCentered,
 		DevToolsEnabled: true,
 		Windows:         application.WindowsWindow{
 			//BackdropType:        application.Acrylic,

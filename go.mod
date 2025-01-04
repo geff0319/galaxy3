@@ -12,7 +12,7 @@ require (
 	github.com/go-vgo/robotgo v0.110.5
 	github.com/google/uuid v1.6.0
 	github.com/json-iterator/go v1.1.12
-	github.com/klauspost/cpuid/v2 v2.2.3
+	github.com/klauspost/cpuid/v2 v2.2.7
 	github.com/lxn/win v0.0.0-20210218163916-a377121e959e
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/robotn/gohook v0.41.0
@@ -20,7 +20,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1014
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tmt v1.0.1014
 	github.com/wailsapp/wails/v2 v2.9.2
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.7
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.8
 	golang.org/x/sync v0.8.0
 	golang.org/x/text v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -31,6 +31,7 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
+	github.com/adrg/xdg v0.5.0 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/cloudflare/circl v1.4.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.3.2 // indirect
@@ -40,7 +41,7 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/gen2brain/shm v0.1.1 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
-	github.com/go-git/go-billy/v5 v5.5.0 // indirect
+	github.com/go-git/go-billy/v5 v5.6.0 // indirect
 	github.com/go-git/go-git/v5 v5.12.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-toast/toast v0.0.0-20190211030409-01e6764cf0a4 // indirect
@@ -86,7 +87,7 @@ require (
 	github.com/vcaesar/imgo v0.40.2 // indirect
 	github.com/vcaesar/keycode v0.10.1 // indirect
 	github.com/vcaesar/tt v0.20.1 // indirect
-	github.com/wailsapp/go-webview2 v1.0.16 // indirect
+	github.com/wailsapp/go-webview2 v1.0.18 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
@@ -98,7 +99,7 @@ require (
 	golang.org/x/image v0.21.0 // indirect
 	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
