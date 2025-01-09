@@ -25,12 +25,30 @@ const taskType = ref('下载中');
 const currentPage = ref(1);
 const isFirst = ref(true);
 
+let timer:any;
+let isTimerRunning = false; // 用来确保只有一个定时器在运行
+
+function startTimer() {
+  if (!isTimerRunning) { // 确保只有一个定时器在运行
+    timer = setIntervalImmediately(()=>{Events.Emit({name:'windowMessage', data: "download"})}, 1000)
+    isTimerRunning = true;
+  }
+}
+function stopTimer() {
+  if (isTimerRunning) { // 确保只有一个定时器在运行时才清除
+    clearInterval(timer);
+    isTimerRunning = false;
+    console.log("定时器已停止");
+  }
+}
 // const timer = setIntervalImmediately(ytdlpStore.getAllVideoInfo, 1000)
 ytdlpStore.loading = true
-Events.Emit({name:'windowMessage', data: "download"})
+// Events.Emit({name:'windowMessage', data: "download"})
+startTimer()
 onUnmounted(() => {
+  stopTimer()
   // clearInterval(timer)
-  Events.Emit({name:'windowMessage', data: "complete"})
+  // Events.Emit({name:'windowMessage', data: "complete"})
 })
 
 const handleAddSub = async () => {
@@ -118,11 +136,13 @@ watch(taskType, (newValue) => {
     console.log(1);  // 如果值是 '下载中'，打印 1
     currentPage.value=1
     ytdlpStore.loading=true
-    Events.Emit({name:'windowMessage', data: "download"})
+    // Events.Emit({name:'windowMessage', data: "download"})
+    startTimer()
   } else if (newValue === '已完成') {
     console.log(2);  // 如果值是 '已完成'，打印 2
     currentPage.value=1
     ytdlpStore.loading=true
+    stopTimer()
     Events.Emit({name:'windowMessage', data: "complete"})
   }
 });

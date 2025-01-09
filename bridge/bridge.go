@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"time"
 )
 
 //go:embed image/icon.ico
@@ -95,26 +94,27 @@ func InitBridge(assets fs.FS) {
 		MainApp.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
 		switch e.Data {
 		case "download":
-			stopCh = make(chan bool)
-			go func() {
-				for {
-					select {
-					case <-stopCh: // 接收到停止信号
-						MainApp.Logger.Info("Stopping the loop.")
-						return
-					default:
-						res := YdpConfig.Mdb.AllProcess()
-						MainWin.EmitEvent("videoProcess", res)
-						time.Sleep(time.Second)
-					}
-
-				}
-			}()
+			MainWin.EmitEvent("videoProcess", YdpConfig.Mdb.AllProcess())
+			//stopCh = make(chan bool)
+			//go func() {
+			//	for {
+			//		select {
+			//		case <-stopCh: // 接收到停止信号
+			//			MainApp.Logger.Info("Stopping the loop.")
+			//			return
+			//		default:
+			//			res := YdpConfig.Mdb.AllProcess()
+			//			MainWin.EmitEvent("videoProcess", res)
+			//			time.Sleep(time.Second)
+			//		}
+			//
+			//	}
+			//}()
 		case "complete":
-			if stopCh != nil {
-				stopCh <- true // 发送停止信号
-				stopCh = nil   // 重置通道
-			}
+			//if stopCh != nil {
+			//	stopCh <- true // 发送停止信号
+			//	stopCh = nil   // 重置通道
+			//}
 			MainWin.EmitEvent("videoProcess", AllFinish())
 		}
 	})
