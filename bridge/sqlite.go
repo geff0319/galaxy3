@@ -74,6 +74,21 @@ func (s *SqliteService) OnStartup(ctx context.Context, options application.Servi
 			}
 		}
 	}
+	//失败视频放进列表
+	res, err = SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') != 2 ORDER BY create_time DESC`)
+	if err != nil {
+		gefflog.Err("获取失败视频error: " + err.Error())
+	}
+	//解析失败时pid不存在
+	for _, r := range res {
+		var p Process
+		p.Unmarshal(r)
+		if p.Pid == "" {
+			YdpConfig.Mq.Publish(&p)
+		} else {
+			YdpConfig.Mdb.Set(&p)
+		}
+	}
 	return nil
 }
 

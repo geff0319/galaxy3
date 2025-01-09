@@ -256,7 +256,7 @@ func (p *Process) Complete() {
 			fmt.Sprintf("[%s]%s: 下载完成", MqttC.opt.ClientID, p.Info.FileName))
 	}
 	gefflog.Info(fmt.Sprintf("finished: id=%s, url=%s", p.GetShortId(), p.Url))
-	YdpConfig.Mdb.Delete(p.Pid)
+	YdpConfig.Mdb.Delete(p.Id)
 }
 
 // Kill a process and remove it from the memory
@@ -576,7 +576,7 @@ func (p *Process) Delete() {
 	if err != nil {
 		gefflog.Err("Process Delete error: " + err.Error())
 	}
-	YdpConfig.Mdb.Delete(p.Pid)
+	YdpConfig.Mdb.Delete(p.Id)
 }
 func (p *Process) IsExist() int {
 	gefflog.Info(p.Pid)

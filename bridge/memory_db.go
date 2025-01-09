@@ -17,7 +17,7 @@ type MemoryDB struct {
 }
 
 // Get a process pointer given its id
-func (m *MemoryDB) Get(id string) (*Process, error) {
+func (m *MemoryDB) Get(id int64) (*Process, error) {
 	entry, ok := m.table.Load(id)
 	if !ok {
 		return nil, errors.New("no process found for the given key")
@@ -32,13 +32,13 @@ func (m *MemoryDB) Set(process *Process) string {
 	//
 	//m.table.Store(id, process)
 	//process.Pid = id
-	m.table.Store(process.Pid, process)
+	m.table.Store(process.Id, process)
 
 	return process.Pid
 }
 
 // Removes a process progress, given the process id
-func (m *MemoryDB) Delete(id string) {
+func (m *MemoryDB) Delete(id int64) {
 	m.table.Delete(id)
 }
 

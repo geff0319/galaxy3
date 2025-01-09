@@ -65,7 +65,6 @@ func (m *MessageQueue) downloadConsumer() {
 		gefflog.Info(fmt.Sprintf("下载开始：received process from event bus bus=%s consumer=downloadConsumer id=%s", queueName, p.GetShortId()))
 
 		if p.Progress.Status != StatusCompleted {
-			fmt.Println(p)
 			p.Start()
 		}
 		gefflog.Info(fmt.Sprintf("started process bus=%s id=%s", queueName, p.GetShortId()))
@@ -85,7 +84,7 @@ func (m *MessageQueue) metadataSubscriber() {
 		defer sem.Release(1)
 
 		gefflog.Info(fmt.Sprintf("解析开始：received process from event bus bus=%s consumer=metadataConsumer id=%s", queueName, p.GetShortId()))
-
+		YdpConfig.Mdb.Set(p)
 		if p.Progress.Status == StatusCompleted {
 			gefflog.Info(fmt.Sprintf("process has an illegal state id=%s status=%d", p.GetShortId(), p.Progress.Status))
 			return

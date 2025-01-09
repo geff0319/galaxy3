@@ -63,7 +63,10 @@ const menuList: Menu[] = [
     handler: async (id: number) => {
       try {
         const data = await deleteProcess(id)
-        await  ytdlpStore.getAllVideoInfo()
+        if(taskType.value === '已完成'){
+          Events.Emit({name:'windowMessage', data: "complete"})
+        }
+        // await  ytdlpStore.getAllVideoInfo()
         message.info(data)
       }catch (error :any) {
         message.error(error)
@@ -100,7 +103,10 @@ const reTry = async (p:ProcessType) => {
 const deleteVideo = async (id: number) => {
   try {
     const data = await deleteProcess(id)
-    await  ytdlpStore.getAllVideoInfo()
+    // await  ytdlpStore.getAllVideoInfo()
+    if(taskType.value === '已完成'){
+      Events.Emit({name:'windowMessage', data: "complete"})
+    }
     message.info(data)
   }catch (error :any) {
     message.error(error)
@@ -138,6 +144,9 @@ watch(() => ytdlpStore.process, (newValue) => {
     const startIndex = (currentPage.value - 1) * 10;
     const endIndex = currentPage.value * 10;
     taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
+    if(taskList.value.length===0&&currentPage.value != 1){
+      currentPage.value = currentPage.value-1
+    }
   }
 }, { deep: true });
 
@@ -176,15 +185,15 @@ watch(() => ytdlpStore.process, (newValue) => {
         校验登录状态
       </Button>
     </div>
-    <a-segmented v-model:value="taskType" block :options="taskTypeList" />
+    <a-segmented v-model:value="taskType" block :options="taskTypeList" :disabled="ytdlpStore.loading" />
     <Button @click="handleAddSub" type="primary">
       {{ t('common.add') }}
     </Button>
   </div>
 
   <div  :class="'grid-list-' + appSettingsStore.app.ytdlpView">
-    <a-spin v-if="ytdlpStore.loading" class="grid-list-empty"/>
-    <a-empty v-else-if="ytdlpStore.process.length === 0 && !ytdlpStore.loading" class="grid-list-empty"/>
+    <Icon  icon="load2" v-if="ytdlpStore.loading" class="grid-list-empty icon-loading" style="width: 20px;height: 20px" />
+    <a-empty v-else-if="ytdlpStore.process.length === 0 && !ytdlpStore.loading" class="grid-list-empty" :description="null" />
     <div v-else>
       <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
         <template v-if="appSettingsStore.app.ytdlpView === View.Grid" #cover>
@@ -418,14 +427,14 @@ watch(() => ytdlpStore.process, (newValue) => {
   left: 50%;
   transform: translate(-50%, -50%);
   //font-size: 48px;
-  animation: rotate 2s linear infinite; /* 应用旋转动画 */
+  animation: rotate 1s linear infinite; /* 应用旋转动画 */
 }
 @keyframes rotate {
   from {
-    transform: translate(-50%, -50%) rotate(0deg); /* 初始状态 */
+    transform: translate(-50%, -50%) rotate(360deg); /* 初始状态 */
   }
   to {
-    transform: translate(-50%, -50%) rotate(360deg); /* 旋转一圈 */
+    transform: translate(-50%, -50%) rotate(0deg); /* 旋转一圈 */
   }
 }
 .unselectable-image {

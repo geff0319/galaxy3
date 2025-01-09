@@ -109,7 +109,7 @@ func (a *App) All() FlagResultWithData {
 			continue
 		}
 		//gefflog.Info(p.Info.FileName + ": 是正在下载的")
-		dstP, _ := YdpConfig.Mdb.Get(p.Pid)
+		dstP, _ := YdpConfig.Mdb.Get(p.Id)
 		if dstP != nil {
 			ps = append(ps, *dstP)
 		} else {
@@ -170,7 +170,7 @@ func (a *App) Delete(id int64) FlagResult {
 		gefflog.Err("删除任务失败,任务不存在")
 		return FlagResult{false, "删除任务失败,任务不存在"}
 	}
-	res, _ := YdpConfig.Mdb.Get(p.Pid)
+	res, _ := YdpConfig.Mdb.Get(p.Id)
 	if res != nil {
 		p = res
 	}
@@ -179,13 +179,8 @@ func (a *App) Delete(id int64) FlagResult {
 			gefflog.Err(fmt.Sprintf("删除任务失败 id: %d, err: %s", p.Id, err.Error()))
 			return FlagResult{false, "删除任务失败"}
 		}
-		//YdpConfig.Mdb.Delete(p.Id)
-
-	} else {
-		//YdpConfig.Mdb.Delete(p.Id)
 	}
 	p.Delete()
-	fmt.Println(id)
 	return FlagResult{true, "删除成功"}
 }
 

@@ -64,7 +64,8 @@ const icons = [
     'video',
     'mqtt',
     'about',
-    'jiazai'
+    'jiazai',
+    'load2'
 ] as const
 
 export default icons
