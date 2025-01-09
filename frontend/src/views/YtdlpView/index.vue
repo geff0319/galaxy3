@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref } from 'vue'
+import { onUnmounted, ref ,watch} from 'vue'
 import { useI18n, I18nT } from 'vue-i18n'
 import { FileTextOutlined,FolderOpenOutlined,LinkOutlined,DeleteOutlined,PlayCircleOutlined } from '@ant-design/icons-vue';
 import { View } from '@/constant'
@@ -10,7 +10,7 @@ import {
 } from '@/stores'
 import {setIntervalImmediately} from "@/utils";
 import YtdlpForm from "@/views/YtdlpView/components/YtdlpForm.vue";
-import {AppCheckBiliLogin, deleteProcess,Browser} from "@/bridge";
+import {AppCheckBiliLogin, deleteProcess,Browser,Events} from "@/bridge";
 import {message} from "ant-design-vue";
 
 
@@ -19,8 +19,19 @@ const appSettingsStore = useAppSettingsStore()
 const ytdlpStore = useYtdlpStore()
 const showForm = ref(false)
 const loginLoad =ref(false)
-ytdlpStore.getAllVideoInfo()
-const timer = setIntervalImmediately(ytdlpStore.getAllVideoInfo, 1000)
+const taskList = ref<ProcessType[]>([])
+const taskTypeList = ref(['下载中','已完成']);
+const taskType = ref('下载中');
+const currentPage = ref(1);
+const isFirst = ref(true);
+
+// const timer = setIntervalImmediately(ytdlpStore.getAllVideoInfo, 1000)
+ytdlpStore.loading = true
+Events.Emit({name:'windowMessage', data: "download"})
+onUnmounted(() => {
+  // clearInterval(timer)
+  Events.Emit({name:'windowMessage', data: "complete"})
+})
 
 const handleAddSub = async () => {
   showForm.value = true
@@ -35,12 +46,17 @@ const check = async () =>{
     message.error(err)
     loginLoad.value = false
   }
-
 }
-onUnmounted(() => {
-  clearInterval(timer)
-})
+const onChange = (page:any, pageSize:any)=>{
+  // 还是查所有数据,根据页数分割
+  console.log(page)
+  // 计算当前页的起始索引
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = page * pageSize;
 
+  // 截取分页后的数据
+  taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
+}
 const menuList: Menu[] = [
   {
     label: '删除',
@@ -91,22 +107,56 @@ const deleteVideo = async (id: number) => {
   }
 }
 
+watch(taskType, (newValue) => {
+  if (newValue === '下载中') {
+    console.log(1);  // 如果值是 '下载中'，打印 1
+    currentPage.value=1
+    ytdlpStore.loading=true
+    Events.Emit({name:'windowMessage', data: "download"})
+  } else if (newValue === '已完成') {
+    console.log(2);  // 如果值是 '已完成'，打印 2
+    currentPage.value=1
+    ytdlpStore.loading=true
+    Events.Emit({name:'windowMessage', data: "complete"})
+  }
+});
+
+watch(currentPage, (newValue) => {
+  // 计算当前页的起始索引
+  const startIndex = (newValue - 1) * 10;
+  const endIndex = newValue * 10;
+
+  // 截取分页后的数据
+  taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
+});
+
+watch(() => ytdlpStore.process, (newValue) => {
+  if(isFirst.value){
+    taskList.value = newValue.slice(0, 10);
+    isFirst.value= false
+  }else {
+    const startIndex = (currentPage.value - 1) * 10;
+    const endIndex = currentPage.value * 10;
+    taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
+  }
+}, { deep: true });
+
 </script>
 
 <template>
-  <div v-if="ytdlpStore.process.length === 0" class="grid-list-empty">
-    <Empty>
-      <template #description>
-        <I18nT keypath="ytdlp.empty" tag="p" scope="global">
-          <template #action>
-            <Button @click="handleAddSub" type="link">{{ t('common.add') }}</Button>
-          </template>
-        </I18nT>
-      </template>
-    </Empty>
-  </div>
+<!--  <div v-if="ytdlpStore.process.length === 0" class="grid-list-empty">-->
+<!--    <Empty>-->
+<!--      <template #description>-->
+<!--        <I18nT keypath="ytdlp.empty" tag="p" scope="global">-->
+<!--          <template #action>-->
+<!--            <Button @click="handleAddSub" type="link">{{ t('common.add') }}</Button>-->
+<!--          </template>-->
+<!--        </I18nT>-->
+<!--      </template>-->
+<!--    </Empty>-->
+<!--  </div>-->
 
-  <div v-else class="grid-list-header">
+  <div class="grid-list-header">
 <!--    <Radio-->
 <!--        v-model="appSettingsStore.app.ytdlpView"-->
 <!--        :options="[-->
@@ -126,139 +176,151 @@ const deleteVideo = async (id: number) => {
         校验登录状态
       </Button>
     </div>
+    <a-segmented v-model:value="taskType" block :options="taskTypeList" />
     <Button @click="handleAddSub" type="primary">
       {{ t('common.add') }}
     </Button>
   </div>
 
-  <div :class="'grid-list-' + appSettingsStore.app.ytdlpView">
-    <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
-      <template v-if="appSettingsStore.app.ytdlpView === View.Grid" #cover>
-            <a-image
-                class="unselectable-image"
-                :height="125"
-                :preview="false"
-                src="data:image/png;base64,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"
-            />
-      </template>
-      <div class="overlay" v-show="p.progress.process_status === 3">
-        <!-- 纯圆形遮罩 -->
-        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
-      </div>
-      <div class="overlay" v-show="p.progress.process_status === 0">
-        <!-- 纯圆形遮罩 -->
-        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
-      </div>
-      <a-flex vertical gap="small" >
-        <a-row :gutter="16">
-          <a-col :span="18" >
-            <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">{{ p.info.title }}</div>
-          </a-col>
-          <a-col :span="6" >
-            <a-tag style="height: 20px" color="processing">{{  p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
-          </a-col>
-        </a-row>
-        <a-row :gutter="4">
-          <a-col :span="18">
-            <a-progress style="display: flex;align-items: center" :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)" size="small" :show-info="false" />
-          </a-col>
-          <a-col :span="6" style="display: flex;align-items: center">
-            <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
-          </a-col>
-        </a-row>
-      </a-flex>
-    </Card>
-    <a-card v-if="appSettingsStore.app.ytdlpView === View.List" v-for="(p, index) in ytdlpStore.process" size="small" class="a-card" >
-      <!--      View.List-->
-      <div class="overlay" v-menu="generateMenus(p)" v-if="p.progress.process_status === 3">
-        <!-- 失败遮罩 -->
-        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
-      </div>
-      <div class="overlay" v-show="p.progress.process_status === 0">
-        <!-- 加载中遮罩 -->
-        <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
-      </div>
-      <div :class="'card-' + appSettingsStore.app.ytdlpView">
-        <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px; display: flex;justify-content: center; align-items: center;">
-          <img
-              v-if="p.info.thumbnail===''"
+  <div  :class="'grid-list-' + appSettingsStore.app.ytdlpView">
+    <a-spin v-if="ytdlpStore.loading" class="grid-list-empty"/>
+    <a-empty v-else-if="ytdlpStore.process.length === 0 && !ytdlpStore.loading" class="grid-list-empty"/>
+    <div v-else>
+      <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
+        <template v-if="appSettingsStore.app.ytdlpView === View.Grid" #cover>
+          <a-image
               class="unselectable-image"
-              :src="'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAkBJREFUWEftlz2I1EAYht832RhPC8FOhUMED7TTQmVxf4a1EcHqGu3sxMZaBMFSsLDwEMRaLU7xuOuWnSEJrIKtFiIeiIUWgtrorptkZI7dRUNuN7dLksaBNJlv8jzzzZfJhCi5sWQ+GATB0mAweADALlimD+AhlVIbAC4UDB/jjMBLAGdKE5BSviJ5eijwDMCbnGUqAG6OGEwIXBJCPM1TQCm1G8CviQJBECyGYXhHay1I7gIgLcu60Wg03s8rl0lAKSUBiATstRDiVO4CAFaHKTJr9U9zXXdPtVodp28WmakZcF13rd/v/0x7uG3bB+v1+udZwKMxUwVMEUop35FcSoC+CCEOTIL7vn8yiqLzAFaEEN/TYjMJKKXOAVgHYCoWWuvflmUtN5tNcy+1KaWuaq3vkXS11m8dx6nVarVvyeBMAmaQUuowAHMhjuNPrVbrQxq52+0u9Hq9RyQv/92/nURmgSzr7Hne0TiO1wAcS4s3EiSbQoivO6qBLHAp5UUAj0nunRSvtTb1dHYkMXcGlFLm9bwL4HoW0WENjSXmEuh0OodIPie54w3JZCKO44Zt2z+mbsVpM5NSNgAY+P6sM0/Gaa03HccRYRh+HPVl+hhJKW+RvD0rOPF2bJI8kkmg3W7vq1QqZms2+0IubdsMeJ53IoqiFyQXcyEPH5oqIKW8RnIlT/B4CRJHsivD8+FyEXDDSGbAfGoXioJvCZR+KP0vUPqPie/7x6Mouq+1toosvq0CJJ+U/3Na9KyTvD+iO0J5c0BS3QAAAABJRU5ErkJggg=='"
-              alt=""
+              :height="125"
+              :preview="false"
+              src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3PTWBSGcbGzM6GCKqlIBRV0dHRJFarQ0eUT8LH4BnRU0NHR0UEFVdIlFRV7TzRksomPY8uykTk/zewQfKw/9znv4yvJynLv4uLiV2dBoDiBf4qP3/ARuCRABEFAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghgg0Aj8i0JO4OzsrPv69Wv+hi2qPHr0qNvf39+iI97soRIh4f3z58/u7du3SXX7Xt7Z2enevHmzfQe+oSN2apSAPj09TSrb+XKI/f379+08+A0cNRE2ANkupk+ACNPvkSPcAAEibACyXUyfABGm3yNHuAECRNgAZLuYPgEirKlHu7u7XdyytGwHAd8jjNyng4OD7vnz51dbPT8/7z58+NB9+/bt6jU/TI+AGWHEnrx48eJ/EsSmHzx40L18+fLyzxF3ZVMjEyDCiEDjMYZZS5wiPXnyZFbJaxMhQIQRGzHvWR7XCyOCXsOmiDAi1HmPMMQjDpbpEiDCiL358eNHurW/5SnWdIBbXiDCiA38/Pnzrce2YyZ4//59F3ePLNMl4PbpiL2J0L979+7yDtHDhw8vtzzvdGnEXdvUigSIsCLAWavHp/+qM0BcXMd/q25n1vF57TYBp0a3mUzilePj4+7k5KSLb6gt6ydAhPUzXnoPR0dHl79WGTNCfBnn1uvSCJdegQhLI1vvCk+fPu2ePXt2tZOYEV6/fn31dz+shwAR1sP1cqvLntbEN9MxA9xcYjsxS1jWR4AIa2Ibzx0tc44fYX/16lV6NDFLXH+YL32jwiACRBiEbf5KcXoTIsQSpzXx4N28Ja4BQoK7rgXiydbHjx/P25TaQAJEGAguWy0+2Q8PD6/Ki4R8EVl+bzBOnZY95fq9rj9zAkTI2SxdidBHqG9+skdw43borCXO/ZcJdraPWdv22uIEiLA4q7nvvCug8WTqzQveOH26fodo7g6uFe/a17W3+nFBAkRYENRdb1vkkz1CH9cPsVy/jrhr27PqMYvENYNlHAIesRiBYwRy0V+8iXP8+/fvX11Mr7L7ECueb/r48eMqm7FuI2BGWDEG8cm+7G3NEOfmdcTQw4h9/55lhm7DekRYKQPZF2ArbXTAyu4kDYB2YxUzwg0gi/41ztHnfQG26HbGel/crVrm7tNY+/1btkOEAZ2M05r4FB7r9GbAIdxaZYrHdOsgJ/wCEQY0J74TmOKnbxxT9n3FgGGWWsVdowHtjt9Nnvf7yQM2aZU/TIAIAxrw6dOnAWtZZcoEnBpNuTuObWMEiLAx1HY0ZQJEmHJ3HNvGCBBhY6jtaMoEiJB0Z29vL6ls58vxPcO8/zfrdo5qvKO+d3Fx8Wu8zf1dW4p/cPzLly/dtv9Ts/EbcvGAHhHyfBIhZ6NSiIBTo0LNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiEC/wGgKKC4YMA4TAAAAABJRU5ErkJggg=="
           />
-          <img
-              v-else
-              class="unselectable-image"
-              height="100%"
-              width="100%"
-              :src="p.info.thumbnail"
-              alt=""
-          />
+        </template>
+        <div class="overlay" v-show="p.progress.process_status === 3">
+          <!-- 纯圆形遮罩 -->
+          <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
         </div>
-        <div style="width: 84%">
-          <div style="height: 80%">
-            <div style="height: 40%; display: flex; align-items: center;">
-              <div style="width: 600px;display: flex; ">
-                <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">
-                  {{ p.info.title||p.url }}
+        <div class="overlay" v-show="p.progress.process_status === 0">
+          <!-- 纯圆形遮罩 -->
+          <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
+        </div>
+        <a-flex vertical gap="small" >
+          <a-row :gutter="16">
+            <a-col :span="18" >
+              <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">{{ p.info.title }}</div>
+            </a-col>
+            <a-col :span="6" >
+              <a-tag style="height: 20px" color="processing">{{  p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
+            </a-col>
+          </a-row>
+          <a-row :gutter="4">
+            <a-col :span="18">
+              <a-progress style="display: flex;align-items: center" :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)" size="small" :show-info="false" />
+            </a-col>
+            <a-col :span="6" style="display: flex;align-items: center">
+              <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
+            </a-col>
+          </a-row>
+        </a-flex>
+      </Card>
+      <a-card v-if="appSettingsStore.app.ytdlpView === View.List" v-for="(p, index) in taskList" size="small" class="a-card" >
+        <!--      View.List-->
+        <div class="overlay" v-menu="generateMenus(p)" v-if="p.progress.process_status === 3">
+          <!-- 失败遮罩 -->
+          <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon" icon="fail"/></div>
+        </div>
+        <div class="overlay" v-show="p.progress.process_status === 0">
+          <!-- 加载中遮罩 -->
+          <div :class='"circle-"+ appSettingsStore.app.ytdlpView'><Icon class="icon-loading" icon="jiazai"/></div>
+        </div>
+        <div :class="'card-' + appSettingsStore.app.ytdlpView">
+          <div style="width: 16%;border: 1px solid  rgba(232,232,232,0.99);border-radius: 8px;margin-right: 15px; display: flex;justify-content: center; align-items: center;">
+            <img
+                v-if="p.info.thumbnail===''"
+                class="unselectable-image"
+                :src="'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAkBJREFUWEftlz2I1EAYht832RhPC8FOhUMED7TTQmVxf4a1EcHqGu3sxMZaBMFSsLDwEMRaLU7xuOuWnSEJrIKtFiIeiIUWgtrorptkZI7dRUNuN7dLksaBNJlv8jzzzZfJhCi5sWQ+GATB0mAweADALlimD+AhlVIbAC4UDB/jjMBLAGdKE5BSviJ5eijwDMCbnGUqAG6OGEwIXBJCPM1TQCm1G8CviQJBECyGYXhHay1I7gIgLcu60Wg03s8rl0lAKSUBiATstRDiVO4CAFaHKTJr9U9zXXdPtVodp28WmakZcF13rd/v/0x7uG3bB+v1+udZwKMxUwVMEUop35FcSoC+CCEOTIL7vn8yiqLzAFaEEN/TYjMJKKXOAVgHYCoWWuvflmUtN5tNcy+1KaWuaq3vkXS11m8dx6nVarVvyeBMAmaQUuowAHMhjuNPrVbrQxq52+0u9Hq9RyQv/92/nURmgSzr7Hne0TiO1wAcS4s3EiSbQoivO6qBLHAp5UUAj0nunRSvtTb1dHYkMXcGlFLm9bwL4HoW0WENjSXmEuh0OodIPie54w3JZCKO44Zt2z+mbsVpM5NSNgAY+P6sM0/Gaa03HccRYRh+HPVl+hhJKW+RvD0rOPF2bJI8kkmg3W7vq1QqZms2+0IubdsMeJ53IoqiFyQXcyEPH5oqIKW8RnIlT/B4CRJHsivD8+FyEXDDSGbAfGoXioJvCZR+KP0vUPqPie/7x6Mouq+1toosvq0CJJ+U/3Na9KyTvD+iO0J5c0BS3QAAAABJRU5ErkJggg=='"
+                alt=""
+            />
+            <img
+                v-else
+                class="unselectable-image"
+                height="100%"
+                width="100%"
+                :src="p.info.thumbnail"
+                alt=""
+            />
+          </div>
+          <div style="width: 84%">
+            <div style="height: 80%">
+              <div style="height: 40%; display: flex; align-items: center;">
+                <div style="width: 600px;display: flex; ">
+                  <div :class="'title-' + appSettingsStore.app.ytdlpView" :title="p.info.title">
+                    {{ p.info.title||p.url }}
+                  </div>
+                  <a-tag color="#108ee9">{{ p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
                 </div>
-                <a-tag color="#108ee9">{{ p.biliMeta.SelectedVideoQuality || formatResolution(p.info.resolution) }}</a-tag>
-              </div>
-              <div style="flex: 1;display: flex;align-items: center;">
-                <div style="width: 73px">
-                  {{ p.info.created_at.substring(0, 10) }}
-                </div>
-                <div class="icon-container">
-                  <a-tooltip color="#ffffff">
-                    <template #title>
-                      <span class="custom-tooltip">打开链接</span>
-                    </template>
-                    <LinkOutlined class="icon-wrapper" @click="Browser.OpenURL(p.url)"/>
-                  </a-tooltip>
-                  <a-tooltip color="#ffffff">
-                    <template #title>
-                      <span class="custom-tooltip">播放视频</span>
-                    </template>
-                    <PlayCircleOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.savedFilePath)"/>
-                  </a-tooltip>
-                  <a-tooltip color="#ffffff">
-                    <template #title>
-                      <span class="custom-tooltip">打开文件目录</span>
-                    </template>
-                    <FolderOpenOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.Path)"/>
-                  </a-tooltip>
-                  <a-tooltip color="#ffffff">
-                    <template #title>
-                      <span class="custom-tooltip">删除记录</span>
-                    </template>
-                    <DeleteOutlined class="icon-wrapper" @click="deleteVideo(Number(p.id))"/>
-                  </a-tooltip>
+                <div style="flex: 1;display: flex;align-items: center;">
+                  <div style="width: 73px">
+                    {{ p.info.created_at.substring(0, 10) }}
+                  </div>
+                  <div class="icon-container">
+                    <a-tooltip color="#ffffff">
+                      <template #title>
+                        <span class="custom-tooltip">打开链接</span>
+                      </template>
+                      <LinkOutlined class="icon-wrapper" @click="Browser.OpenURL(p.url)"/>
+                    </a-tooltip>
+                    <a-tooltip color="#ffffff">
+                      <template #title>
+                        <span class="custom-tooltip">播放视频</span>
+                      </template>
+                      <PlayCircleOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.savedFilePath)"/>
+                    </a-tooltip>
+                    <a-tooltip color="#ffffff">
+                      <template #title>
+                        <span class="custom-tooltip">打开文件目录</span>
+                      </template>
+                      <FolderOpenOutlined class="icon-wrapper" @click="Browser.OpenURL(p.output.Path)"/>
+                    </a-tooltip>
+                    <a-tooltip color="#ffffff">
+                      <template #title>
+                        <span class="custom-tooltip">删除记录</span>
+                      </template>
+                      <DeleteOutlined class="icon-wrapper" @click="deleteVideo(Number(p.id))"/>
+                    </a-tooltip>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div style="display: flex">
-            <a-progress
-                style="width:92%"
-                :status="p.progress.process_status===4 ? 'active': undefined"
-                :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)"
-                size="small"
-                :show-info="false"
-            />
-            <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
+            <div style="display: flex">
+              <a-progress
+                  style="width:92%"
+                  :status="p.progress.process_status===4 ? 'active': undefined"
+                  :percent="p.progress.process_status===2 ? 100: parseInt(p.progress.percentage,10)"
+                  size="small"
+                  :show-info="false"
+              />
+              <div>{{ formatSpeedMiB(p.progress.speed) }}</div>
+            </div>
           </div>
         </div>
-      </div>
-    </a-card>
-
+      </a-card>
+    </div>
   </div>
 
+  <div class="footer" v-show="ytdlpStore.process.length !== 0">
+    <a-pagination size="small" v-model:current="currentPage" :total="ytdlpStore.process.length" :showSizeChanger="false"/>
+  </div>
   <Modal v-model:open="showForm" max-height="80" :footer="false" >
     <YtdlpForm />
   </Modal>
 </template>
 
 <style lang="less" scoped>
+.footer {
+  margin: 2px 0;
+  text-align: right;
+  z-index: 9;
+}
 .custom-tooltip {
   color: black; /* 自定义字体颜色 */
   font-size: 12px; /* 自定义字体大小 */

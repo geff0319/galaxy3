@@ -35,6 +35,8 @@ const { picker } = usePicker()
 const { confirm } = useConfirm()
 const { prompt } = usePrompt()
 const { alert } = useAlert()
+const ytdlp = useYtdlpStore()
+
 
 window.Plugins.message = message
 window.Plugins.picker = picker
@@ -91,6 +93,16 @@ Events.Once("appInit", function(event:any) {
         antmessage.info(event.data[2],3)
         break;
     }
+  })
+
+  Events.On('videoProcess',(event:any)=>{
+    // console.log(event)
+    if(event.data[0]===null){
+      ytdlp.process=[]
+    }else {
+      ytdlp.process = event.data[0]
+    }
+    ytdlp.loading=false
   })
   //ws
   // wsClientStore.setupWsSettings().then(()=>{

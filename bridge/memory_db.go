@@ -74,6 +74,18 @@ func (m *MemoryDB) All() *[]ProcessResponse {
 	})
 	return &running
 }
+func (m *MemoryDB) AllProcess() []Process {
+	var running []Process
+
+	m.table.Range(func(key, value any) bool {
+		running = append(running, *value.(*Process))
+		return true
+	})
+	sort.Slice(running, func(i, j int) bool {
+		return running[i].Info.CreatedAt.After(running[j].Info.CreatedAt)
+	})
+	return running
+}
 
 // Persist the database in a single file named "session.dat"
 func (m *MemoryDB) Persist(basePath string) error {

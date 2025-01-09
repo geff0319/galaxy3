@@ -6,11 +6,13 @@ import (
 	"github.com/geff0319/galaxy3/bridge/ytdlp"
 	"github.com/klauspost/cpuid/v2"
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"github.com/wailsapp/wails/v3/pkg/services/fileserver"
 	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 //go:embed image/icon.ico
@@ -42,6 +44,7 @@ var Env = &EnvResult{
 
 var Config = &AppConfig{}
 var AppTitle = "Galaxy"
+var stopCh chan bool // 用于控制停止信号
 
 func InitBridge(assets fs.FS) {
 	// step1: Set Env
@@ -68,7 +71,6 @@ func InitBridge(assets fs.FS) {
 	//	yaml.Unmarshal(b, &Config)
 	//}
 	//放在sqlite初始化之后
-
 	MainApp = application.New(application.Options{
 		Name:        "galaxy3",
 		Description: "galaxy3",
@@ -76,6 +78,11 @@ func InitBridge(assets fs.FS) {
 		Services: []application.Service{
 			application.NewService(NewApp()),
 			application.NewService(SqliteNew(Env.BasePath + "/data/app.db")),
+			application.NewService(fileserver.New(&fileserver.Config{
+				RootPath: filepath.Join(Env.BasePath, "data", "files"),
+			}), application.ServiceOptions{
+				Route: "/files",
+			}),
 		},
 		Assets: application.AssetOptions{
 			Handler: application.AssetFileServerFS(assets),
@@ -83,6 +90,33 @@ func InitBridge(assets fs.FS) {
 		Mac: application.MacOptions{
 			ApplicationShouldTerminateAfterLastWindowClosed: true,
 		},
+	})
+	MainApp.OnEvent("windowMessage", func(e *application.CustomEvent) {
+		MainApp.Logger.Info("[Go] CustomEvent received", "name", e.Name, "data", e.Data, "sender", e.Sender, "cancelled", e.Cancelled)
+		switch e.Data {
+		case "download":
+			stopCh = make(chan bool)
+			go func() {
+				for {
+					select {
+					case <-stopCh: // 接收到停止信号
+						MainApp.Logger.Info("Stopping the loop.")
+						return
+					default:
+						res := YdpConfig.Mdb.AllProcess()
+						MainWin.EmitEvent("videoProcess", res)
+						time.Sleep(time.Second)
+					}
+
+				}
+			}()
+		case "complete":
+			if stopCh != nil {
+				stopCh <- true // 发送停止信号
+				stopCh = nil   // 重置通道
+			}
+			MainWin.EmitEvent("videoProcess", AllFinish())
+		}
 	})
 }
 
@@ -103,4 +137,10 @@ func (a *App) RestartApp() FlagResult {
 	a.ExitApp()
 
 	return FlagResult{true, "Success"}
+}
+
+type WindowMessageEvent struct {
+	Cycle bool   `json:"cycle"`
+	State string `json:"state"`
+	Type  string `json:"type"`
 }

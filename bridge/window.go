@@ -65,7 +65,6 @@ func InitMianWin() {
 		MainWin.Show()
 		InitWidgetsWin()
 	})
-
 	//YtdlpWinShow()
 }
 

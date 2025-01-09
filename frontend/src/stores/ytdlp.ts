@@ -170,6 +170,7 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
     const youtubeRegex = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/;
     const bilibiliRegex = /^https:\/\/www\.bilibili\.com\/video\/BV/;
     const parseing = ref<boolean>(false)
+    const loading = ref<boolean>(false)
     const determineUrl = (url:string) =>{
         if(youtubeRegex.test(url)){
             getBaseUrl(url)
@@ -220,14 +221,14 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
 
     const downloadYoutube =async (isKey:boolean,retry:boolean)=>{
         try {
-            let res
+
             if(isKey){
-              res = await appDownloadYoutubeByKey(resProcess.value,retry)
+                await appDownloadYoutubeByKey(resProcess.value,retry)
             }else {
-              res = await appDownloadYoutube(downloadUrl.value,[])
+                await appDownloadYoutube(downloadUrl.value,[])
             }
-            await getAllVideoInfo()
-            return res
+            // await getAllVideoInfo()
+
         }catch (error:any){
             throw error
         }
@@ -250,6 +251,7 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
         process,
         resProcess,
         menuShow,
+        loading,
         determineUrl,
         getVideoMeta,
         downloadYoutube,

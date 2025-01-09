@@ -97,7 +97,9 @@ func (a *App) All() FlagResultWithData {
 	if err != nil {
 		gefflog.Err("SelectProcess err:" + err.Error())
 	}
-	ps := []Process{}
+
+	//ps := []Process{}
+	ps := make([]Process, 0, len(res))
 	for _, r := range res {
 		var p Process
 		p.Unmarshal(r)
@@ -121,6 +123,26 @@ func (a *App) All() FlagResultWithData {
 	}
 }
 
+func AllFinish() []Process {
+	res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC`)
+	if err != nil {
+		gefflog.Err("SelectProcess err:" + err.Error())
+	}
+
+	//ps := []Process{}
+	ps := make([]Process, 0, len(res))
+	for _, r := range res {
+		var p Process
+		p.Unmarshal(r)
+		ps = append(ps, p)
+
+	}
+	return ps
+}
+
+func downloading() {
+
+}
 func (a *App) UpdateYtDlpConfig() FlagResult {
 	//b, err := os.ReadFile(Env.BasePath + "/data/ytdlp.yaml")
 	//if err != nil {
