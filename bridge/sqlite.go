@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/ge-fei-fan/gefflog"
 	"github.com/wailsapp/wails/v3/pkg/application"
 	_ "modernc.org/sqlite"
@@ -47,7 +46,6 @@ func (s *SqliteService) OnStartup(ctx context.Context, options application.Servi
 		return errors.New(`no database file specified. Please set DBFile in the config to either a filename or use ":memory:" to use an in-memory database`)
 	}
 	gefflog.Info("连接数据库·····")
-	fmt.Println(s.DBFile)
 	err := s.Init()
 	if err != nil {
 		gefflog.Err(err.Error())
@@ -95,6 +93,10 @@ func (s *SqliteService) OnStartup(ctx context.Context, options application.Servi
 func (s *SqliteService) Open(dbPath string) (string, error) {
 	var err error
 	s.conn, err = sql.Open("sqlite", dbPath)
+	if err != nil {
+		return "", err
+	}
+	_, err = s.conn.Exec("PRAGMA journal_mode=WAL;")
 	if err != nil {
 		return "", err
 	}
