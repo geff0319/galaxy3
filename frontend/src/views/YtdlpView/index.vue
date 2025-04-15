@@ -65,16 +65,7 @@ const check = async () =>{
     loginLoad.value = false
   }
 }
-const onChange = (page:any, pageSize:any)=>{
-  // 还是查所有数据,根据页数分割
-  console.log(page)
-  // 计算当前页的起始索引
-  const startIndex = (page - 1) * pageSize;
-  const endIndex = page * pageSize;
 
-  // 截取分页后的数据
-  taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
-}
 const menuList: Menu[] = [
   {
     label: '删除',
@@ -121,9 +112,9 @@ const reTry = async (p:ProcessType) => {
 const deleteVideo = async (id: number) => {
   try {
     const data = await deleteProcess(id)
-    // await  ytdlpStore.getAllVideoInfo()
     if(taskType.value === '已完成'){
-      Events.Emit({name:'windowMessage', data: "complete"})
+      // Events.Emit({name:'windowMessage', data: "complete"})
+      await ytdlpStore.getProcess(currentPage.value,10)
     }
     message.info(data)
   }catch (error :any) {
@@ -146,28 +137,15 @@ watch(taskType, (newValue) => {
     Events.Emit({name:'windowMessage', data: "complete"})
   }
 });
+const pageChange = (current: number, pageSize: number) => {
+  console.log(current, pageSize);
+  ytdlpStore.getProcess(current,pageSize)
+};
 
-watch(currentPage, (newValue) => {
-  // 计算当前页的起始索引
-  const startIndex = (newValue - 1) * 10;
-  const endIndex = newValue * 10;
 
-  // 截取分页后的数据
-  taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
-});
-
-watch(() => ytdlpStore.process, (newValue) => {
-  if(isFirst.value){
-    taskList.value = newValue.slice(0, 10);
-    isFirst.value= false
-  }else {
-    const startIndex = (currentPage.value - 1) * 10;
-    const endIndex = currentPage.value * 10;
-    taskList.value = ytdlpStore.process.slice(startIndex, endIndex);
-    if(taskList.value.length===0&&currentPage.value != 1){
-      currentPage.value = currentPage.value-1
-    }
-  }
+watch(() => ytdlpStore.allProcess, (newValue) => {
+  currentPage.value = newValue.pageNum
+  taskList.value = newValue.processes
 }, { deep: true });
 
 </script>
@@ -213,9 +191,9 @@ watch(() => ytdlpStore.process, (newValue) => {
 
   <div  :class="'grid-list-' + appSettingsStore.app.ytdlpView">
     <Icon  icon="load2" v-if="ytdlpStore.loading" class="grid-list-empty icon-loading" style="width: 20px;height: 20px" />
-    <a-empty v-else-if="ytdlpStore.process.length === 0 && !ytdlpStore.loading" class="grid-list-empty" :description="null" />
+    <a-empty v-else-if="ytdlpStore.allProcess.totalSize === 0 && !ytdlpStore.loading" class="grid-list-empty" :description="null" />
     <div v-else>
-      <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.process" :class="'item'" :body-style="{height:'66px'}" :key="p.id + p.progress.process_status" v-menu="generateMenus(p)" >
+      <Card v-if="appSettingsStore.app.ytdlpView === View.Grid" hoverable size="small" v-for="(p, index) in ytdlpStore.allProcess.processes" :class="'item'" :body-style="{height:'66px'}" :key="p.id" v-menu="generateMenus(p)" >
         <template v-if="appSettingsStore.app.ytdlpView === View.Grid" #cover>
           <a-image
               class="unselectable-image"
@@ -336,8 +314,8 @@ watch(() => ytdlpStore.process, (newValue) => {
     </div>
   </div>
 
-  <div class="footer" v-show="ytdlpStore.process.length !== 0">
-    <a-pagination size="small" v-model:current="currentPage" :total="ytdlpStore.process.length" :showSizeChanger="false"/>
+  <div class="footer" v-show="ytdlpStore.allProcess.totalPage !== 0">
+    <a-pagination size="small" v-model:current="currentPage" :total="ytdlpStore.allProcess.totalSize" :showSizeChanger="false" @change="pageChange"/>
   </div>
   <Modal v-model:open="showForm" max-height="80" :footer="false" >
     <YtdlpForm />

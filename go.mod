@@ -19,8 +19,8 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1014
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/tmt v1.0.1014
 	github.com/wailsapp/wails/v2 v2.9.2
-	github.com/wailsapp/wails/v3 v3.0.0-alpha.8
-	golang.org/x/sync v0.8.0
+	github.com/wailsapp/wails/v3 v3.0.0-alpha.9
+	golang.org/x/sync v0.9.0
 	golang.org/x/text v0.19.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.21.0
@@ -87,7 +87,7 @@ require (
 	github.com/vcaesar/imgo v0.40.2 // indirect
 	github.com/vcaesar/keycode v0.10.1 // indirect
 	github.com/vcaesar/tt v0.20.1 // indirect
-	github.com/wailsapp/go-webview2 v1.0.18 // indirect
+	github.com/wailsapp/go-webview2 v1.0.19 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
@@ -101,6 +101,7 @@ require (
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect

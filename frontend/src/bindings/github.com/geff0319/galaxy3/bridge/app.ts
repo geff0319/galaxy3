@@ -122,6 +122,11 @@ export function GetInterfaces(): Promise<$models.FlagResult> & { cancel(): void 
     return $resultPromise;
 }
 
+export function GetProcessByPage(current: number, pageSize: number): Promise<$models.FlagResultWithData> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(1495602525, current, pageSize) as any;
+    return $resultPromise;
+}
+
 /**
  * 获取视频清晰度和名称
  */

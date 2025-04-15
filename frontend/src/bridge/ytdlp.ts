@@ -43,6 +43,13 @@ export const appAll = async () => {
     }
     return data
 }
+export const getProcessByPage = async (current: number, pageSize: number) => {
+    const { flag,data } = await App.GetProcessByPage(current,pageSize)
+    if (!flag) {
+        throw data
+    }
+    return data
+}
 export const UpdateYtDlpConfig = async () => {
     const { flag,data } = await App.UpdateYtDlpConfig()
     if (!flag) {

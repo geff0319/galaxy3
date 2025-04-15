@@ -74,7 +74,7 @@ func (m *MemoryDB) All() *[]ProcessResponse {
 	})
 	return &running
 }
-func (m *MemoryDB) AllProcess() []Process {
+func (m *MemoryDB) AllProcess() AllProcess {
 	var running []Process
 
 	m.table.Range(func(key, value any) bool {
@@ -84,7 +84,15 @@ func (m *MemoryDB) AllProcess() []Process {
 	sort.Slice(running, func(i, j int) bool {
 		return running[i].Info.CreatedAt.After(running[j].Info.CreatedAt)
 	})
-	return running
+
+	allProcess := AllProcess{
+		TotalSize: int64(len(running)),
+		TotalPage: 0,
+		PageNum:   0,
+		PageSize:  0,
+		Processes: running,
+	}
+	return allProcess
 }
 
 // Persist the database in a single file named "session.dat"

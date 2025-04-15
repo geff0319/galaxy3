@@ -15,6 +15,10 @@ import YtdlpView from '@/views/YtdlpView/index.vue'
 import WidgetsView from '@/views/WidgetsView.vue'
 import YtdlpWidgetView from '@/views/YtdlpView/YtdlpWidget.vue'
 import OptionView from '@/components/Option/index.vue'
+import BallMenuView from '@/views/BallView/index.vue'
+import SingleBallView from '@/views/BallView/SingleBall.vue'
+import FlipClock from "@/views/FlipClockView/FlipClock.vue";
+
 
 
 const routes: RouteRecordRaw[] = [
@@ -98,7 +102,39 @@ const routes: RouteRecordRaw[] = [
       newlayout: true,
       hidden: true,
       keepAlive:true
-    }
+    },
+    children: [
+      {
+        path: 'single-ball',  // 子路由路径，注意这里不用写 `/widgets/`，它会自动附加到父路由
+        name: 'SingleBall',
+        component: SingleBallView,  // 子路由组件
+        meta: {
+          name: '单悬浮球',
+          newlayout: true,
+          keepAlive:true
+        }
+      },
+      {
+        path: 'ball-menu',  // 子路由路径，注意这里不用写 `/widgets/`，它会自动附加到父路由
+        name: 'BallMenu',
+        component: BallMenuView,  // 子路由组件
+        meta: {
+          name: '悬浮球菜单',
+          newlayout: true,
+          keepAlive:true
+        }
+      },
+      {
+        path: 'clock',  // 子路由路径，注意这里不用写 `/widgets/`，它会自动附加到父路由
+        name: 'Clock',
+        component: FlipClock,  // 子路由组件
+        meta: {
+          name: '时钟',
+          newlayout: true,
+          keepAlive:true
+        }
+      }
+    ]
   },
   {
     path: '/ytdlpWidgets',

@@ -55,6 +55,14 @@ type Process struct {
 	//Logger   *slog.Logger
 }
 
+type AllProcess struct {
+	TotalSize int64     `json:"totalSize"`
+	TotalPage int64     `json:"totalPage"`
+	PageNum   int64     `json:"pageNum"`
+	PageSize  int64     `json:"pageSize"`
+	Processes []Process `json:"processes"`
+}
+
 // Starts spawns/forks a new ytdlp process and parse its stdout.
 // The process is spawned to outputting a custom progress text that
 // Resembles a JSON Object in order to Unmarshal it later.

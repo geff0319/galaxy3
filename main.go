@@ -22,12 +22,12 @@ func main() {
 	bridge.InitBridge(assets)
 	bridge.InitMianWin()
 	//bridge.InitWidgetsWin()
-	bridge.InitSystray()
+	//bridge.InitSystray()
 
 	// Run the application. This blocks until the application has been exited.
-	bridge.InitScheduledTasks()
+	//bridge.InitScheduledTasks()
 	//bridge.MqNotifyConsumer()
-	bridge.CreateHook()
+	//bridge.CreateHook()
 	err := bridge.MainApp.Run()
 
 	// If an error occurred while running the application, log it and exit.

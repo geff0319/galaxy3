@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ge-fei-fan/gefflog"
 	"github.com/geff0319/galaxy3/bridge/website"
+	"math"
 	"strconv"
 )
 
@@ -123,8 +124,13 @@ func (a *App) All() FlagResultWithData {
 	}
 }
 
-func AllFinish() []Process {
-	res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC`)
+func AllFinish() AllProcess {
+	//res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC`)
+	//if err != nil {
+	//	gefflog.Err("SelectProcess err:" + err.Error())
+	//}
+
+	res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC LIMIT 10`)
 	if err != nil {
 		gefflog.Err("SelectProcess err:" + err.Error())
 	}
@@ -137,7 +143,70 @@ func AllFinish() []Process {
 		ps = append(ps, p)
 
 	}
-	return ps
+
+	item, err := SqliteS.Select(`SELECT count(id) as num FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2`)
+	if err != nil {
+		gefflog.Err("SelectProcess err:" + err.Error())
+	}
+	var totalSize int64
+	var totalPage int64
+
+	if num, ok := item[0]["num"]; ok {
+		if t, ok := num.(int64); ok {
+			totalSize = t
+			totalPage = int64(math.Ceil(float64(totalSize) / float64(10)))
+		}
+	}
+	allProcess := AllProcess{
+		TotalSize: totalSize,
+		TotalPage: totalPage,
+		PageNum:   1,
+		PageSize:  10,
+		Processes: ps,
+	}
+	return allProcess
+}
+func (a *App) GetProcessByPage(current int64, pageSize int64) FlagResultWithData {
+	offset := (current - 1) * pageSize
+	res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC LIMIT ? OFFSET ?`, pageSize, offset)
+	if err != nil {
+		gefflog.Err("SelectProcess err:" + err.Error())
+	}
+
+	//ps := []Process{}
+	ps := make([]Process, 0, len(res))
+	for _, r := range res {
+		var p Process
+		p.Unmarshal(r)
+		ps = append(ps, p)
+
+	}
+
+	item, err := SqliteS.Select(`SELECT count(id) as num FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2`)
+	if err != nil {
+		gefflog.Err("SelectProcess err:" + err.Error())
+	}
+	var totalSize int64
+	var totalPage int64
+
+	if num, ok := item[0]["num"]; ok {
+		if t, ok := num.(int64); ok {
+			totalSize = t
+			totalPage = int64(math.Ceil(float64(totalSize) / float64(10)))
+		}
+	}
+	allProcess := AllProcess{
+		TotalSize: totalSize,
+		TotalPage: totalPage,
+		PageNum:   current,
+		PageSize:  pageSize,
+		Processes: ps,
+	}
+	return FlagResultWithData{
+		Flag: true,
+		Msg:  "操作成功",
+		Data: allProcess,
+	}
 }
 
 func downloading() {

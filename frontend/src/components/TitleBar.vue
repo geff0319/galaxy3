@@ -35,6 +35,12 @@ const enableWidgets = async() => {
   // await win.OpenDevTools()
   // ShowWidgets()
 }
+const changeView = async()=>{
+  // router.push({ name: 'Ball' })
+  const win = Window.Get("SingleBallWin")
+  await win.Show()
+  // await win.OpenDevTools()
+}
 
 
 const closeWindow = async () => {
@@ -84,7 +90,7 @@ const menus: Menu[] = [
 <!--          悬浮窗-->
 <!--        </Button>-->
 <!--        <template #overlay>-->
-<!--          <Button type="link" size="small" @click.stop="enableWidgets">-->
+<!--          <Button type="link" size="small" @click.stop="changeView">-->
 <!--            ⏰时钟-->
 <!--          </Button>-->
 <!--        </template>-->

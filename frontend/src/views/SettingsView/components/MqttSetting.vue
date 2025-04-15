@@ -32,6 +32,7 @@ appMqttClient.connectionStatus()
               type="text"
               placeholder="broker"
               v-model="appMqttClient.mqttInfo.broker"
+              :disabled="appMqttClient.isConnected"
               :style="{cursor:appMqttClient.isConnected?'not-allowed':'text','background-color':appMqttClient.isConnected?'rgb(245, 245, 245)':'rgb(255, 255, 255)'}"
           />
         </div>
@@ -53,6 +54,7 @@ appMqttClient.connectionStatus()
               type="text"
               placeholder="clientid"
               v-model="appMqttClient.mqttInfo.clientID"
+              :disabled="appMqttClient.isConnected"
               :style="{cursor:appMqttClient.isConnected?'not-allowed':'text','background-color':appMqttClient.isConnected?'rgb(245, 245, 245)':'rgb(255, 255, 255)'}"
           />
         </div>
@@ -64,6 +66,7 @@ appMqttClient.connectionStatus()
               type="text"
               placeholder="username"
               v-model="appMqttClient.mqttInfo.userName"
+              :disabled="appMqttClient.isConnected"
               :style="{cursor:appMqttClient.isConnected?'not-allowed':'text','background-color':appMqttClient.isConnected?'rgb(245, 245, 245)':'rgb(255, 255, 255)'}"
           />
         </div>
@@ -75,6 +78,7 @@ appMqttClient.connectionStatus()
               type="text"
               placeholder="password"
               v-model="appMqttClient.mqttInfo.password"
+              :disabled="appMqttClient.isConnected"
               :style="{cursor:appMqttClient.isConnected?'not-allowed':'text','background-color':appMqttClient.isConnected?'rgb(245, 245, 245)':'rgb(255, 255, 255)'}"
           />
         </div>

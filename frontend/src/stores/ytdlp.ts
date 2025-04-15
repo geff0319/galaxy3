@@ -5,7 +5,7 @@ import {
     // appDbPersist,
     appDownloadYoutube,
     appDownloadYoutubeByKey,
-    appGetVideoMeta, deleteProcess,
+    appGetVideoMeta, deleteProcess, getProcessByPage,
     UpdateYtDlpConfig
 } from "@/bridge/ytdlp";
 import {message} from "ant-design-vue";
@@ -73,6 +73,14 @@ export type ProcessType = {
     }
 }
 
+export type AllProcessType = {
+    totalSize :number
+    totalPage :number
+    pageNum   :number
+    pageSize :number
+    processes : ProcessType[]
+}
+
 export function formatSize(bytes: number): string {
     const threshold = 1024
     const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
@@ -116,6 +124,13 @@ export const formatResolution=(val: string):string=>{
 
 export const useYtdlpStore = defineStore('ytdlp', () => {
     const process = ref<ProcessType[]>([])
+    const allProcess = ref<AllProcessType>({
+        totalSize: 0,
+        totalPage: 0,
+        pageNum: 0,
+        pageSize: 0,
+        processes: [],
+    })
     const resProcess = ref<ProcessType>({
         id: "",
         pid:"",
@@ -218,6 +233,11 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
         process.value = await appAll()
         console.log(process.value)
     }
+    const getProcess= async (current: number, pageSize: number)=> {
+
+        allProcess.value = await getProcessByPage(current, pageSize)
+        console.log(allProcess.value)
+    }
 
     const downloadYoutube =async (isKey:boolean,retry:boolean)=>{
         try {
@@ -250,8 +270,10 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
         parseing,
         process,
         resProcess,
+        allProcess,
         menuShow,
         loading,
+        getProcess,
         determineUrl,
         getVideoMeta,
         downloadYoutube,

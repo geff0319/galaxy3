@@ -54,6 +54,10 @@ onBeforeUnmount(() => stopTimer())
 .clock-container {
   display: flex;
   align-items: center;
+  --wails-draggable: drag;
+  --custom-contextmenu: WidgetsWinMenu;
+  width: 380px;
+  height: 70px;
 
   .colon {
     height: 50px;

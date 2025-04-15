@@ -96,11 +96,11 @@ Events.Once("appInit", function(event:any) {
   })
 
   Events.On('videoProcess',(event:any)=>{
-    // console.log(event)
+    console.log(event)
     if(event.data[0]===null){
-      ytdlp.process=[]
+      ytdlp.allProcess.processes=[]
     }else {
-      ytdlp.process = event.data[0]
+      ytdlp.allProcess = event.data[0]
     }
     ytdlp.loading=false
   })
