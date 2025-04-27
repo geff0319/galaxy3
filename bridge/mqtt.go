@@ -89,7 +89,12 @@ func (mc *MqttClient) initSubscribe() {
 		topic:    fmt.Sprintf(TWITTER_DOWNLOAD_TOPIC, mc.Mqtt.ClientID),
 		qos:      0,
 		callback: TwitterPubHandler,
+	}, Subscribe{
+		topic:    fmt.Sprintf(OFFLINE_DOWNLOAD_TOPIC, mc.Mqtt.ClientID),
+		qos:      0,
+		callback: OfflinePubHandler,
 	})
+
 }
 
 func (mc *MqttClient) connect() error {
@@ -98,6 +103,14 @@ func (mc *MqttClient) connect() error {
 		return token.Error()
 	}
 	return nil
+}
+
+func (mc *MqttClient) Publish(topic string, qos byte, retained bool, payload interface{}) {
+	if mc.Client != nil && mc.Client.IsConnected() {
+		if token := mc.Client.Publish(topic, qos, retained, payload); token.WaitTimeout(10*time.Second) && token.Error() != nil {
+			gefflog.Err("mqtt发布主题失败：" + token.Error().Error())
+		}
+	}
 }
 
 func (mc *MqttClient) disconnect() {

@@ -7,6 +7,7 @@ require (
 	github.com/coder/websocket v1.8.12
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/energye/systray v1.0.2
+	github.com/ge-fei-fan/clouddrive2api v0.1.5
 	github.com/ge-fei-fan/gefflog v0.1.4
 	github.com/gen2brain/beeep v0.0.0-20240516210008-9c006672e7f4
 	github.com/go-vgo/robotgo v0.110.5
@@ -101,6 +102,9 @@ require (
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/tools v0.26.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240227224415-6ceb2ff114de // indirect
+	google.golang.org/grpc v1.63.2 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

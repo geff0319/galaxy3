@@ -90,6 +90,9 @@ func InitMianWin() {
 	MainWin.SetRelativePosition(0, 0)
 	MainWin.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
 		fmt.Println("quit app ")
+		if Cd2Client != nil {
+			Cd2Client.Close()
+		}
 		MainWin.EmitEvent("beforeClose")
 	})
 	MainWin.RegisterHook(events.Common.WindowRuntimeReady, func(e *application.WindowEvent) {
@@ -98,6 +101,7 @@ func InitMianWin() {
 		MainWin.Show()
 
 		InitSystray()
+		InitCd2Client()
 		InitScheduledTasks()
 		CreateHook()
 

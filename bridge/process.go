@@ -260,7 +260,7 @@ func (p *Process) Complete() {
 	}
 	p.UpdateProgress()
 	if MqttC.Client != nil && MqttC.Client.IsConnectionOpen() {
-		MqttC.Client.Publish(DOWNLOAD_RESULT_TOPIC, 0, false,
+		MqttC.Publish(DOWNLOAD_RESULT_TOPIC, 0, false,
 			fmt.Sprintf("[%s]%s: 下载完成", MqttC.opt.ClientID, p.Info.FileName))
 	}
 	gefflog.Info(fmt.Sprintf("finished: id=%s, url=%s", p.GetShortId(), p.Url))
