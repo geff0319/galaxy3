@@ -99,7 +99,8 @@ func (p *Process) Start() {
 	//TODO: it spawn another one ytdlp process, too slow.
 	//go p.GetFileName(&out)
 	//p.Output.SavedFilePath = filepath.Join(YdpConfig.DownloadPath, sanitizeFileName(p.Info.FileName))
-	p.Output.SavedFilePath = filepath.Join(p.Output.Path, ytdlp.SanitizeFileName(p.Info.FileName))
+	fileName := strings.ReplaceAll(p.Info.FileName, " ", "")
+	p.Output.SavedFilePath = filepath.Join(p.Output.Path, ytdlp.SanitizeFileName(fileName))
 	// bilibii下载
 	if strings.Contains(p.Url, "bilibili") {
 		// 视频下载链接会过期，每次都重新获取，根据SelectedVideoQuality来查找历史的

@@ -56,11 +56,14 @@ func TestD(t *testing.T) {
 	//
 	//// 验证内容大小
 	//fmt.Println(getResp.ContentLength)
-	metadata, err := GetBilibiliInfo("https://www.bilibili.com/video/BV11z421a7eP", "")
-	if err != nil {
-		t.Log(err)
-	}
-	fmt.Printf("metadata:%v", metadata)
+	//metadata, err := GetBilibiliInfo("https://www.bilibili.com/video/BV11z421a7eP", "")
+	//if err != nil {
+	//	t.Log(err)
+	//}
+	//fmt.Printf("metadata:%v", metadata)
+	name := "Love one 유솜 Yousom 러브원 Drama Queen 축하공연 팬사인회 아세아항공직업전문학교 [ZfVEbHx_4K0].webm]"
+	name1 := strings.ReplaceAll(name, " ", "")
+	fmt.Println(name1)
 }
 
 func TestThumbnail(t *testing.T) {
