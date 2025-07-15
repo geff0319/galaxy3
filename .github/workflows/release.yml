@@ -58,7 +58,8 @@ jobs:
       - run: node -v
       - name: Install dependencies
         run: |
-          go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+#          go install -v github.com/wailsapp/wails/v3/cmd/wails3@latest
+          go install -v github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-alpha.9
           wails3 generate bindings -ts -i -d "frontend/src/bindings"
           cd frontend && pnpm install
           #  go install github.com/wailsapp/wails/v2/cmd/wails@latest
