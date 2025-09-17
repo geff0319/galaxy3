@@ -52,11 +52,18 @@ const formattingStatus = () =>{
 }
 const saveBilibiliCookie = (str:string) =>{
   const parsedUrl = new URL(str);
+  console.log(parsedUrl)
   const sessdata: string | null = parsedUrl.searchParams.get("SESSDATA")
+  const bili_jct: string | null = parsedUrl.searchParams.get("bili_jct")
   if (sessdata !== null) {
     ytdlpSettingsStore.ytdlpConfig.cookies.bilibili = sessdata; // 这里没有错误
   } else {
     ytdlpSettingsStore.ytdlpConfig.cookies.bilibili= undefined; // 或者不赋值
+  }
+  if (bili_jct !== null) {
+    ytdlpSettingsStore.ytdlpConfig.cookies.bilijct = bili_jct;
+  } else {
+    ytdlpSettingsStore.ytdlpConfig.cookies.bilijct= undefined;
   }
 }
 const checkLoginStatus = async (key: string)=>{
@@ -78,6 +85,7 @@ const checkLoginStatus = async (key: string)=>{
     statusCode.value = body1.data.code
     if(statusCode.value === 0){
       message.info("登录成功")
+      console.log(body1.data.url)
       saveBilibiliCookie(body1.data.url)
       handleCancel()
       return

@@ -7,6 +7,7 @@ import (
 	"github.com/geff0319/galaxy3/bridge/website"
 	"math"
 	"strconv"
+	"time"
 )
 
 // 获取视频清晰度和名称
@@ -129,11 +130,15 @@ func AllFinish() AllProcess {
 	//if err != nil {
 	//	gefflog.Err("SelectProcess err:" + err.Error())
 	//}
-
+	currentTime := time.Now()
+	gefflog.Err("自定义格式0:", currentTime.Format("2006年01月02日 15:04:05"))
 	res, err := SqliteS.Select(`SELECT id,pid,url, params,info,progress,output,biliMeta FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2 ORDER BY create_time DESC LIMIT 10`)
 	if err != nil {
 		gefflog.Err("SelectProcess err:" + err.Error())
 	}
+
+	currentTime = time.Now()
+	gefflog.Err("自定义格式1:", currentTime.Format("2006年01月02日 15:04:05"))
 
 	//ps := []Process{}
 	ps := make([]Process, 0, len(res))
@@ -143,6 +148,8 @@ func AllFinish() AllProcess {
 		ps = append(ps, p)
 
 	}
+	currentTime = time.Now()
+	gefflog.Err("自定义格式2:n", currentTime.Format("2006年01月02日 15:04:05"))
 
 	item, err := SqliteS.Select(`SELECT count(id) as num FROM process where is_delete = 0 AND json_extract(progress, '$.process_status') = 2`)
 	if err != nil {
@@ -151,12 +158,18 @@ func AllFinish() AllProcess {
 	var totalSize int64
 	var totalPage int64
 
+	currentTime = time.Now()
+	gefflog.Err("自定义格式3:", currentTime.Format("2006年01月02日 15:04:05"))
+
 	if num, ok := item[0]["num"]; ok {
 		if t, ok := num.(int64); ok {
 			totalSize = t
 			totalPage = int64(math.Ceil(float64(totalSize) / float64(10)))
 		}
 	}
+
+	currentTime = time.Now()
+	gefflog.Info("自定义格式4: %s\n", currentTime.Format("2006年01月02日 15:04:05"))
 	allProcess := AllProcess{
 		TotalSize: totalSize,
 		TotalPage: totalPage,
@@ -227,6 +240,11 @@ func (a *App) UpdateYtDlpConfig() FlagResult {
 		gefflog.Err("更新配置失败: " + err.Error())
 		return FlagResult{false, "更新配置失败"}
 	}
+	if len(YdpConfig.Other.BilibiliFav) == 0 {
+		DelFavDownloadTask()
+	} else {
+		AddFavDownloadTask()
+	}
 	return FlagResult{true, "更新配置成功"}
 }
 
@@ -271,5 +289,29 @@ func (a *App) CheckBiliLogin() FlagResult {
 		return FlagResult{false, "账号未登录"}
 	}
 	return FlagResult{true, "账号已登录"}
+
+}
+
+func (a *App) GetFavList() FlagResultWithData {
+	data, err := website.GetFavList(YdpConfig.Cookies.Bilibili)
+	if err != nil {
+		return FlagResultWithData{false, err.Error(), nil}
+	}
+	ps := make([]struct {
+		Id    int    `json:"id"`
+		Title string `json:"title"`
+	}, 0, len(data.Data.List))
+	for _, l := range data.Data.List {
+		var p struct {
+			Id    int    `json:"id"`
+			Title string `json:"title"`
+		}
+		p.Title = l.Title
+		p.Id = l.Id
+		ps = append(ps, p)
+
+	}
+
+	return FlagResultWithData{true, "操作成功", ps}
 
 }

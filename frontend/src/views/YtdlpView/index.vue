@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { onUnmounted, ref ,watch} from 'vue'
+import {onUnmounted, type Ref, ref, watch} from 'vue'
 import { useI18n, I18nT } from 'vue-i18n'
-import { FileTextOutlined,FolderOpenOutlined,LinkOutlined,DeleteOutlined,PlayCircleOutlined } from '@ant-design/icons-vue';
+import { DownOutlined ,FolderOpenOutlined,LinkOutlined,DeleteOutlined,PlayCircleOutlined } from '@ant-design/icons-vue';
 import { View } from '@/constant'
 import {
+  type FaInfo,
   formatResolution, formatSpeedMiB, type Menu, type PluginType, type ProcessType,
-  useAppSettingsStore,
+  useAppSettingsStore, useYtdlpSettingsStore,
   useYtdlpStore
 } from '@/stores'
 import {setIntervalImmediately} from "@/utils";
 import YtdlpForm from "@/views/YtdlpView/components/YtdlpForm.vue";
-import {AppCheckBiliLogin, deleteProcess,Browser,Events} from "@/bridge";
-import {message} from "ant-design-vue";
+import {AppCheckBiliLogin, deleteProcess, Browser, Events, AppGetFavList} from "@/bridge";
+import {type MenuProps, message} from "ant-design-vue";
 
 
 const { t } = useI18n()
 const appSettingsStore = useAppSettingsStore()
 const ytdlpStore = useYtdlpStore()
+const ytdlpSettingsStore = useYtdlpSettingsStore()
 const showForm = ref(false)
 const loginLoad =ref(false)
 const taskList = ref<ProcessType[]>([])
@@ -24,6 +26,9 @@ const taskTypeList = ref(['下载中','已完成']);
 const taskType = ref('下载中');
 const currentPage = ref(1);
 const isFirst = ref(true);
+const favList = ref<FaInfo[]>([])
+const favValue = ref("未指定")
+const favOpen = ref(false)
 
 let timer:any;
 let isTimerRunning = false; // 用来确保只有一个定时器在运行
@@ -41,6 +46,18 @@ function stopTimer() {
     console.log("定时器已停止");
   }
 }
+function getFavValue(){
+  console.log(ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav)
+  if(ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav == null || ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav===""){
+    return
+  }
+  let tmp = ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav.split(":");
+  if(tmp[1].trim().length !== 0) {
+    favValue.value = tmp[1]
+  }
+
+}
+getFavValue()
 // const timer = setIntervalImmediately(ytdlpStore.getAllVideoInfo, 1000)
 ytdlpStore.loading = true
 // Events.Emit({name:'windowMessage', data: "download"})
@@ -66,6 +83,33 @@ const check = async () =>{
   }
 }
 
+const handleFavMenuClick: MenuProps['onClick'] = e => {
+  if(e.key === 0){
+    ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav = ""
+    favValue.value = "未指定"
+    return
+  }
+  favList.value.forEach((item) => {
+    if(item.id === e.key){
+      ytdlpSettingsStore.ytdlpConfig.other.bilibiliFav = item.id + ':' + item.title
+      favValue.value = item.title
+    }
+  })
+  favOpen.value = false
+};
+
+const getFavList = async () =>{
+  favOpen.value = false
+  favList.value = [{"id":0,"title":"未指定"}]
+  try {
+    const data = await AppGetFavList()
+    console.log(data)
+    favList.value.push(...data)
+    favOpen.value = true
+  }catch (err:any){
+    message.error(err)
+  }
+}
 const menuList: Menu[] = [
   {
     label: '删除',
@@ -179,12 +223,28 @@ watch(() => ytdlpStore.allProcess, (newValue) => {
 <!--          <template #icon><UserOutlined /></template>-->
 <!--        </a-avatar>-->
 <!--      </a-card>-->
-      <Button :disable="loginLoad" @click="check" type="primary">
+      <Button :disable="loginLoad" @click="check" type="primary" >
         校验登录状态
       </Button>
     </div>
+    <div style="width: 120px">
+      <a-dropdown :trigger="['click']">
+        <template #overlay>
+          <a-menu @click="handleFavMenuClick" >
+            <a-menu-item
+                v-for="f in favList"
+                :key="f.id">
+              {{ f.title }}
+            </a-menu-item>
+          </a-menu>
+        </template>
+        <a-button block @click="getFavList" :open="favOpen">
+          {{ favValue }}
+        </a-button>
+      </a-dropdown>
+    </div>
     <a-segmented v-model:value="taskType" block :options="taskTypeList" :disabled="ytdlpStore.loading" />
-    <Button @click="handleAddSub" type="primary">
+    <Button  @click="handleAddSub" type="primary">
       {{ t('common.add') }}
     </Button>
   </div>

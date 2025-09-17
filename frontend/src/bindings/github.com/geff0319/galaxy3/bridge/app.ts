@@ -117,6 +117,11 @@ export function GetEnv(): Promise<$models.EnvResult> & { cancel(): void } {
     return $resultPromise;
 }
 
+export function GetFavList(): Promise<$models.FlagResultWithData> & { cancel(): void } {
+    let $resultPromise = $Call.ByID(482361335) as any;
+    return $resultPromise;
+}
+
 export function GetInterfaces(): Promise<$models.FlagResult> & { cancel(): void } {
     let $resultPromise = $Call.ByID(3695391530) as any;
     return $resultPromise;

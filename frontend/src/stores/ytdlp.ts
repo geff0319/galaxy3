@@ -80,6 +80,10 @@ export type AllProcessType = {
     pageSize :number
     processes : ProcessType[]
 }
+export type FaInfo = {
+    id :number
+    title :string
+}
 
 export function formatSize(bytes: number): string {
     const threshold = 1024
@@ -288,15 +292,20 @@ export const useYtdlpStore = defineStore('ytdlp', () => {
 
 type YtDlpCookie ={
     bilibili?:string
+    bilijct?:string
+}
+type Other ={
+    bilibiliFav:string
 }
 type YtdlpSetting = {
     downloadPath: string
     queueSize:string
     cookies:YtDlpCookie
+    other: Other
 }
 export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
     let latestYtdlpConfig = ''
-    const ytdlpConfig = ref<YtdlpSetting>({cookies: {bilibili:""}, queueSize: "", downloadPath: ""})
+    const ytdlpConfig = ref<YtdlpSetting>({cookies: {bilibili:"",bilijct:""}, other:{bilibiliFav:""},queueSize: "", downloadPath: ""})
     let firstOpen = true
 
     const setupYtdlpSettings = async () => {
@@ -304,7 +313,7 @@ export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
             const res = await Select("SELECT config_value FROM config WHERE config_name = 'ytdlp' limit 1;")
             if(res !== null && res !== undefined && res.length !==0){
                 if(res[0]?.["config_value"] ==='') {
-                    await saveYtdlpSettings()
+                    await saveYtdlpSettings(stringify(ytdlpConfig.value))
                 } else {
                     ytdlpConfig.value = Object.assign(ytdlpConfig.value, parse(res[0]?.["config_value"]))
                 }
@@ -318,7 +327,19 @@ export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
         }
 
     }
-    const saveYtdlpSettings = debounce(async (config: string) => {
+    // const saveYtdlpSettings = debounce(async (config: string) => {
+    //     console.log('save ytdlp settings')
+    //     try {
+    //         // await Writefile('data/ytdlp.yaml', config)
+    //         Execute("UPDATE config SET  config_value= ? WHERE config_name = 'ytdlp';",config)
+    //         return true
+    //     }catch (error:any){
+    //         message.error(error)
+    //         return false
+    //     }
+    //
+    // }, 1500)
+    const saveYtdlpSettings = async (config: string) => {
         console.log('save ytdlp settings')
         try {
             // await Writefile('data/ytdlp.yaml', config)
@@ -326,23 +347,33 @@ export const useYtdlpSettingsStore = defineStore('ytdlp-settings', () =>{
 
         }catch (error:any){
             message.error(error)
+
         }
 
-    }, 1500)
+    }
+
 
     watch(
         ytdlpConfig,
         (settings) => {
             if (!firstOpen) {
-                UpdateYtDlpConfig()
                 const lastModifiedConfig = stringify(settings)
-                if (latestYtdlpConfig !== lastModifiedConfig) {
-                    saveYtdlpSettings(lastModifiedConfig).then(() => {
-                        latestYtdlpConfig = lastModifiedConfig
-                    })
-                } else {
-                    saveYtdlpSettings.cancel()
-                }
+                // if (latestYtdlpConfig !== lastModifiedConfig) {
+                //     // saveYtdlpSettings(lastModifiedConfig).then(() => {
+                //     //     latestYtdlpConfig = lastModifiedConfig
+                //     //     console.log(lastModifiedConfig)
+                //     //
+                //     // })
+                //     await saveYtdlpSettings(lastModifiedConfig)
+                //     console.log('配置保存成功，执行后续操作')
+                //     await UpdateYtDlpConfig()
+                // } else {
+                //     saveYtdlpSettings.cancel()
+                // }
+                saveYtdlpSettings(lastModifiedConfig).then(() => {
+                    console.log('配置保存成功，执行后续操作')
+                    UpdateYtDlpConfig()
+                })
             }
             firstOpen = false
         },

@@ -1,6 +1,7 @@
 package website
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,6 +9,7 @@ import (
 	"github.com/ge-fei-fan/gefflog"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
 	url2 "net/url"
 	"os"
@@ -93,6 +95,30 @@ type BiliMetaMemory struct {
 	Vir                    VideoInfoResponse
 }
 
+// 收藏夹
+type FavListResponse struct {
+	Data struct {
+		List []struct {
+			Id    int    `json:"id"`
+			Title string `json:"title"`
+		} `json:"list"`
+	} `json:"data"`
+}
+type Medias struct {
+	Id    int    `json:"id"`
+	Type  int    `json:"type"`
+	Title string `json:"title"`
+	Bvid  string `json:"bvid"`
+}
+type FavResourceResponse struct {
+	Data struct {
+		Medias []Medias `json:"medias"`
+	} `json:"data"`
+}
+type CommonResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 type WebInterfaceNav struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
@@ -244,14 +270,13 @@ func GetBilibiliInfo(url, ck string) (BiliMetadata, error) {
 
 	return md, nil
 }
-
-func CheckLogin(ck string) (bool, error) {
+func getNav(ck string) ([]byte, error) {
 	navUrl := "https://api.bilibili.com/x/web-interface/nav"
 	navUrl, err := sign(navUrl)
 	req, err := http.NewRequest(http.MethodGet, navUrl, nil)
 	if err != nil {
 		gefflog.Err("CheckLogin NewRequest err: " + err.Error())
-		return false, err
+		return nil, err
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0")
 	req.Header.Set("Referer", "https://www.bilibili.com/")
@@ -261,12 +286,22 @@ func CheckLogin(ck string) (bool, error) {
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		gefflog.Err("CheckLogin Request err: %s" + err.Error())
-		return false, err
+		return nil, err
 	}
 	defer response.Body.Close()
+
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		gefflog.Err("CheckLogin ReadAll err: %s" + err.Error())
+		return nil, err
+	}
+
+	return body, err
+}
+
+func CheckLogin(ck string) (bool, error) {
+	body, err := getNav(ck)
+	if err != nil {
 		return false, err
 	}
 	var win WebInterfaceNav
@@ -473,4 +508,134 @@ func (bmd *BiliMetadata) Merge(basePath string) error {
 		return errors.New(audio + "Remove audio error: " + err.Error())
 	}
 	return nil
+}
+
+// 收藏夹
+func GetFavList(ck string) (FavListResponse, error) {
+	var rlr FavListResponse
+	body, err := getNav(ck)
+	if err != nil {
+		return rlr, err
+	}
+	var win WebInterfaceNav
+	err = json.Unmarshal(body, &win)
+	if err != nil {
+		gefflog.Err("GetFavList json Unmarshal err: %s" + err.Error())
+		return rlr, err
+	}
+	if win.Code != 0 {
+		return rlr, errors.New(win.Message)
+	}
+	gefflog.Info("Mid:" + strconv.Itoa(win.Data.Mid))
+	url := "https://api.bilibili.com/x/v3/fav/folder/created/list?ps=20&pn=1&up_mid=" + strconv.Itoa(win.Data.Mid)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		gefflog.Err("/x/v3/fav/folder/created/list err: %s" + err.Error())
+		return rlr, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0")
+	req.Header.Set("Referer", "https://www.bilibili.com/")
+	if ck != "" {
+		req.AddCookie(&http.Cookie{Name: "SESSDATA", Value: ck})
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return rlr, err
+	}
+	defer res.Body.Close()
+
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		gefflog.Err("GetFavList ReadAll err: %s" + err.Error())
+		return rlr, err
+	}
+	err = json.Unmarshal(body, &rlr)
+	if err != nil {
+		gefflog.Err("CheckLogin json Unmarshal err: %s" + err.Error())
+		return rlr, err
+	}
+	return rlr, nil
+}
+
+func GetFavResource(ck string, mediaId string) (FavResourceResponse, error) {
+	var frr FavResourceResponse
+
+	url := "https://api.bilibili.com/x/v3/fav/resource/list?pn=1&ps=40&keyword=&order=mtime&type=0&tid=0&platform=web&media_id=" + mediaId
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+
+	if err != nil {
+		return frr, err
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0")
+	req.Header.Set("Referer", "https://www.bilibili.com/")
+	if ck != "" {
+		req.AddCookie(&http.Cookie{Name: "SESSDATA", Value: ck})
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return frr, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return frr, err
+	}
+
+	err = json.Unmarshal(body, &frr)
+	if err != nil {
+		return frr, err
+	}
+	return frr, nil
+}
+
+func DelFavResource(ck string, media Medias, mediaId string, csrf string) (CommonResponse, error) {
+	var cr CommonResponse
+	// 创建一个缓冲区用于存储multipart form数据
+	reqBody := &bytes.Buffer{}
+	writer := multipart.NewWriter(reqBody)
+
+	// 添加form字段
+	_ = writer.WriteField("resources", fmt.Sprintf("%d:%d", media.Id, media.Type))
+	_ = writer.WriteField("media_id", mediaId)
+	_ = writer.WriteField("platform", "web")
+	_ = writer.WriteField("csrf", csrf)
+
+	// 关闭writer以完成写入
+	err := writer.Close()
+	if err != nil {
+		return cr, err
+	}
+	url := "https://api.bilibili.com/x/v3/fav/resource/batch-del"
+	req, err := http.NewRequest(http.MethodPost, url, reqBody)
+
+	if err != nil {
+		return cr, err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0")
+	req.Header.Set("Referer", "https://www.bilibili.com/")
+	if ck != "" {
+		req.AddCookie(&http.Cookie{Name: "SESSDATA", Value: ck})
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return cr, err
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return cr, err
+	}
+
+	err = json.Unmarshal(body, &cr)
+	if err != nil {
+		return cr, err
+	}
+	return cr, nil
 }

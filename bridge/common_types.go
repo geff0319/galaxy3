@@ -157,6 +157,10 @@ type CustomTemplate struct {
 
 type YtDlpCookie struct {
 	Bilibili string `yaml:"bilibili"`
+	Bilijct  string `yaml:"bilijct"`
+}
+type Other struct {
+	BilibiliFav string `yaml:"bilibiliFav"`
 }
 type YtDlpConfig struct {
 	BasePath     string
@@ -166,6 +170,7 @@ type YtDlpConfig struct {
 	Mdb          *MemoryDB     `yaml:"-"`
 	Mq           *MessageQueue `yaml:"-"`
 	Cookies      YtDlpCookie   `yaml:"cookies"`
+	Other        Other         `yaml:"other"`
 }
 
 func (yc *YtDlpConfig) Unmarshal() error {
@@ -223,6 +228,7 @@ func InitYtDlpConfig() {
 		QueueSize:    8,
 		Mdb:          &mdb,
 		Cookies:      YtDlpCookie{},
+		Other:        Other{BilibiliFav: "未指定"},
 	}
 	if !ytdlp.IsDirExists(YdpConfig.DownloadPath) {
 		os.MkdirAll(filepath.Dir(YdpConfig.DownloadPath), os.ModePerm)

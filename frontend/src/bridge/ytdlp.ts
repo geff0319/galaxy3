@@ -71,3 +71,12 @@ export const AppCheckBiliLogin = async () => {
     }
     return data
 }
+
+export const AppGetFavList = async () => {
+    const { flag,msg,data } = await App.GetFavList()
+    console.log(msg)
+    if (!flag) {
+        throw msg
+    }
+    return data
+}

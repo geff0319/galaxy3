@@ -101,7 +101,7 @@ func InitMianWin() {
 		MainWin.Show()
 
 		InitSystray()
-		InitCd2Client()
+		//InitCd2Client()
 		InitScheduledTasks()
 		CreateHook()
 
